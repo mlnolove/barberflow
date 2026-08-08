@@ -1,0 +1,27 @@
+# Ambiente
+.env
+.env.local
+*.env
+
+# Backend (Python)
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/.pytest_cache/
+backend/.ruff_cache/
+backend/.mypy_cache/
+backend/htmlcov/
+backend/.coverage
+
+# Frontend (Node)
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.tsbuildinfo
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db

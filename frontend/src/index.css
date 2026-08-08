@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-brand: #0f172a;
+  --color-brand-secondary: #2563eb;
+
+  /* Paleta de gráficos (dataviz) — modo claro */
+  --chart-text-secondary: #52514e;
+  --chart-muted: #898781;
+  --chart-grid: #e1e0d9;
+  --chart-baseline: #c3c2b7;
+  --chart-series-1: #2a78d6;
+  --chart-series-2: #eb6834;
+  --chart-series-3: #1baf7a;
+  --chart-series-4: #eda100;
+  --chart-series-5: #e87ba4;
+  --chart-good: #0ca30c;
+  --chart-warning: #fab219;
+  --chart-critical: #d03b3b;
+  --chart-tooltip-bg: #ffffff;
+  --chart-tooltip-border: #e2e8f0;
+  --chart-tooltip-text: #0f172a;
+}
+
+.dark {
+  /* Paleta de gráficos (dataviz) — modo escuro */
+  --chart-text-secondary: #c3c2b7;
+  --chart-muted: #898781;
+  --chart-grid: #2c2c2a;
+  --chart-baseline: #383835;
+  --chart-series-1: #3987e5;
+  --chart-series-2: #d95926;
+  --chart-series-3: #199e70;
+  --chart-series-4: #c98500;
+  --chart-series-5: #d55181;
+  --chart-good: #0ca30c;
+  --chart-warning: #fab219;
+  --chart-critical: #e66767;
+  --chart-tooltip-bg: #1e293b;
+  --chart-tooltip-border: #334155;
+  --chart-tooltip-text: #f1f5f9;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+}
