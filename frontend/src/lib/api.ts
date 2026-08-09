@@ -1,4 +1,4 @@
-import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
+import axios, { type AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
 
 import { useAuthStore } from "@/store/authStore";
 import type { AuthResponse } from "@/types/auth";
@@ -11,6 +11,29 @@ import type { AuthResponse } from "@/types/auth";
  * definida em build time via `VITE_API_URL`.
  */
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
+
+/**
+ * Dentro do app nativo, uma requisição para `/api/...` sem `VITE_API_URL`
+ * configurada não vira um erro de rede — o servidor local do Capacitor
+ * intercepta e devolve o próprio `index.html` (200 OK, fallback de SPA).
+ * Sem essa checagem, esse HTML é aceito como se fosse a resposta da API
+ * (ex.: um "login" que na verdade nunca aconteceu), e o app quebra mais
+ * na frente tentando usar dados que não existem. Content-Type errado =
+ * tratamos como falha de rede de verdade.
+ */
+function assertJsonResponse(response: AxiosResponse): AxiosResponse {
+  const contentType = response.headers?.["content-type"];
+  if (typeof contentType === "string" && !contentType.includes("application/json")) {
+    throw new axios.AxiosError(
+      "Resposta inesperada do servidor (backend inalcançável ou mal configurado).",
+      "ERR_BAD_RESPONSE",
+      response.config,
+      response.request,
+      response,
+    );
+  }
+  return response;
+}
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -33,17 +56,18 @@ api.interceptors.request.use((config) => {
 let refreshPromise: Promise<string> | null = null;
 
 async function refreshAccessToken(): Promise<string> {
-  const { data } = await axios.post<AuthResponse>(
+  const response = await axios.post<AuthResponse>(
     `${API_BASE_URL}/auth/refresh`,
     {},
     { withCredentials: true, timeout: 10_000 },
   );
+  const { data } = assertJsonResponse(response);
   useAuthStore.getState().setAuth(data);
   return data.access_token;
 }
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => assertJsonResponse(response),
   async (error: AxiosError) => {
     const originalRequest = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined;
     const isAuthEndpoint = originalRequest?.url?.startsWith("/auth/");

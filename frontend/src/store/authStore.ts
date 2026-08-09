@@ -24,7 +24,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       accessToken: data.access_token,
       user: data.user,
       tenant: data.tenant,
-      isAuthenticated: true,
+      // Reforço defensivo: só considera autenticado se a resposta realmente
+      // trouxer usuário e token. Evita marcar isAuthenticated=true a partir
+      // de uma resposta malformada (ver assertJsonResponse em lib/api.ts).
+      isAuthenticated: Boolean(data.access_token && data.user),
     }),
   setAccessToken: (token) => set({ accessToken: token, isAuthenticated: true }),
   setTenant: (tenant) => set({ tenant }),
