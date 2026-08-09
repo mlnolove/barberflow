@@ -15,6 +15,11 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 export const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
+  // Sem isso, uma requisição pra um backend inalcançável (ex.: app nativo
+  // sem VITE_API_URL configurada) fica pendurada indefinidamente — a tela
+  // de carregamento inicial (App.tsx aguarda o refresh silencioso) nunca
+  // sai do lugar. Com timeout, falha rápido e cai na tela de login normal.
+  timeout: 10_000,
 });
 
 api.interceptors.request.use((config) => {
@@ -31,7 +36,7 @@ async function refreshAccessToken(): Promise<string> {
   const { data } = await axios.post<AuthResponse>(
     `${API_BASE_URL}/auth/refresh`,
     {},
-    { withCredentials: true },
+    { withCredentials: true, timeout: 10_000 },
   );
   useAuthStore.getState().setAuth(data);
   return data.access_token;
