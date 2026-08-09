@@ -3,8 +3,17 @@ import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/store/authStore";
 import type { AuthResponse } from "@/types/auth";
 
+/**
+ * No navegador (web), fica vazio e usamos o caminho relativo `/api`, que o
+ * Vite reescreve em dev e o Nginx reescreve em produção (mesmo domínio).
+ * Empacotado como app nativo (Capacitor), não existe esse proxy — o WebView
+ * carrega de `https://localhost` e precisa da URL absoluta do backend,
+ * definida em build time via `VITE_API_URL`.
+ */
+const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
+
 export const api = axios.create({
-  baseURL: "/api",
+  baseURL: API_BASE_URL,
   withCredentials: true,
 });
 
@@ -20,7 +29,7 @@ let refreshPromise: Promise<string> | null = null;
 
 async function refreshAccessToken(): Promise<string> {
   const { data } = await axios.post<AuthResponse>(
-    "/api/auth/refresh",
+    `${API_BASE_URL}/auth/refresh`,
     {},
     { withCredentials: true },
   );

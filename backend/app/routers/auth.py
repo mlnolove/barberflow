@@ -18,12 +18,19 @@ REFRESH_COOKIE_PATH = "/api/auth"
 
 
 def _set_refresh_cookie(response: Response, refresh_token: str) -> None:
+    is_production = settings.ENVIRONMENT != "development"
     response.set_cookie(
         key=REFRESH_COOKIE_NAME,
         value=refresh_token,
         httponly=True,
-        secure=settings.ENVIRONMENT != "development",
-        samesite="lax",
+        secure=is_production,
+        # "none" em produção: o app nativo (Capacitor) carrega o WebView de
+        # `https://localhost`, uma origem diferente da API — sem isso o
+        # navegador nunca envia o cookie de refresh nas requisições
+        # cross-origin. "none" exige Secure=True, daí a amarração com
+        # is_production acima. Em dev local, "lax" é suficiente e evita
+        # precisar de HTTPS na máquina do desenvolvedor.
+        samesite="none" if is_production else "lax",
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         path=REFRESH_COOKIE_PATH,
     )

@@ -82,6 +82,14 @@ Uma plataforma única por barbearia (tenant), com controle de acesso granular po
 - Regras de agenda configuráveis pelo próprio dono: antecedência mínima/máxima para agendar, intervalo de almoço bloqueando a agenda, e permissão de cancelamento — todas aplicadas em `appointment_service`, os mesmos pontos de validação usados desde a Fase 4
 - Alteração de configurações restrita a `settings.edit` (apenas OWNER, por padrão — seção 3 da especificação); demais papéis não visualizam nem alteram a tela
 
+### Implementado (App Android)
+
+- Mesmo frontend React empacotado como app nativo Android via [Capacitor](https://capacitorjs.com) — sidebar vira gaveta deslizante em telas de celular, botão físico de voltar tratado, ícone/splash screen próprios
+- URL da API configurável em build-time (`VITE_API_URL`), já que o app nativo não tem o proxy de desenvolvimento do Vite
+- Cookie de refresh token ajustado para `SameSite=None` em produção — necessário porque o WebView do app roda numa origem (`https://localhost`) diferente da API
+- Instruções completas de build (incluindo instalação do JDK/Android SDK) em [COMO_RODAR.md](COMO_RODAR.md#3-app-para-celular-android)
+- iOS não foi empacotado — o Capacitor suporta, mas compilar exige um Mac com Xcode, indisponível neste ambiente de desenvolvimento
+
 ### Planejado (ver [roadmap](#roadmap))
 
 Notificações, integração com Discord, auditoria, relatórios detalhados com filtro de período.
@@ -89,6 +97,8 @@ Notificações, integração com Discord, auditoria, relatórios detalhados com 
 ## Stack tecnológica
 
 **Frontend:** React + TypeScript + Vite + Tailwind CSS + React Router + TanStack Query + React Hook Form + Zod + Zustand + Recharts
+
+**Mobile:** Capacitor (Android) sobre o mesmo código React
 
 **Backend:** Python + FastAPI + Pydantic + SQLAlchemy 2.0 + Alembic + JWT (PyJWT) + Argon2 (passlib)
 

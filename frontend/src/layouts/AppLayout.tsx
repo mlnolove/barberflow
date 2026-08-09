@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 
 import { logout } from "@/api/auth";
@@ -25,6 +26,7 @@ export function AppLayout() {
   const tenant = useAuthStore((state) => state.tenant);
   const hasPermission = useAuthStore((state) => state.hasPermission);
   const clear = useAuthStore((state) => state.clear);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   async function handleLogout() {
     await logout().catch(() => undefined);
@@ -36,7 +38,38 @@ export function AppLayout() {
 
   return (
     <div className="flex min-h-screen">
-      <aside className="flex w-60 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      {/* Barra superior — só em telas de celular (abaixo do breakpoint md) */}
+      <header className="fixed inset-x-0 top-0 z-20 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-3 dark:border-slate-800 dark:bg-slate-900 md:hidden">
+        <button
+          type="button"
+          onClick={() => setDrawerOpen(true)}
+          aria-label="Abrir menu"
+          className="rounded-md p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+        >
+          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <p className="truncate text-sm font-semibold text-brand dark:text-white">
+          {tenant?.name ?? "BarberFlow"}
+        </p>
+        <div className="w-9" aria-hidden="true" />
+      </header>
+
+      {/* Fundo escurecido atrás da gaveta de navegação (mobile) */}
+      {drawerOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/40 md:hidden"
+          onClick={() => setDrawerOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-200 bg-white transition-transform duration-200 ease-out dark:border-slate-800 dark:bg-slate-900 md:static md:z-auto md:w-60 md:translate-x-0 md:transition-none ${
+          drawerOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         <div className="px-6 py-5">
           {tenant?.logo_url ? (
             <img
@@ -57,6 +90,7 @@ export function AppLayout() {
             <NavLink
               key={item.to}
               to={item.to}
+              onClick={() => setDrawerOpen(false)}
               className={({ isActive }) =>
                 `block rounded-md px-3 py-2 text-sm font-medium transition ${
                   isActive
@@ -82,7 +116,7 @@ export function AppLayout() {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pt-14 md:pt-0">
         <Outlet />
       </main>
     </div>
