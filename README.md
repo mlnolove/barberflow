@@ -89,6 +89,7 @@ Uma plataforma única por barbearia (tenant), com controle de acesso granular po
 - Cookie de refresh token ajustado para `SameSite=None` em produção — necessário porque o WebView do app roda numa origem (`https://localhost`) diferente da API
 - Instruções completas de build (incluindo instalação do JDK/Android SDK) em [COMO_RODAR.md](COMO_RODAR.md#3-app-para-celular-android)
 - iOS não foi empacotado — o Capacitor suporta, mas compilar exige um Mac com Xcode, indisponível neste ambiente de desenvolvimento
+- Backend publicado no Railway (Postgres gerenciado, deploy via Docker, migrations automáticas a cada subida) especificamente para o app ter algo real para conversar — o [APK final](https://github.com/mlnolove/barberflow/releases/tag/android-debug-v1) já aponta pra lá e funciona de ponta a ponta em qualquer rede
 
 ### Planejado (ver [roadmap](#roadmap))
 

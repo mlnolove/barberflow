@@ -86,9 +86,9 @@ Site em **http://localhost:5173**, login `admin@elitebarber.com` / `Demo@1234`.
 
 ## 2. Colocando no ar de verdade (produção)
 
-Isso ainda **não está automatizado** neste projeto (é a Fase 11 do roadmap, ainda não implementada) — não existe pipeline de deploy automático nem servidor já configurado. O caminho abaixo é o processo manual de primeira publicação.
+Isso ainda não é automatizado neste projeto (é a Fase 11 do roadmap, ainda não implementada) — não existe pipeline de deploy automático. Mas **o backend já está publicado manualmente**: projeto `barberflow` no Railway, serviço `api` + Postgres, deploy feito via `railway up` a partir de `backend/` (usa o `Dockerfile` existente, que já roda `alembic upgrade head` sozinho a cada subida). URL pública: `https://api-production-c7f64.up.railway.app`. Pra atualizar depois de mudar o backend: `railway up ./backend --path-as-root --service api` (dentro da pasta do projeto, autenticado via `railway login`).
 
-Você precisa de 3 peças hospedadas em algum lugar:
+Falta publicar o **frontend web** (o app mobile já usa esse mesmo backend, mas o site em si ainda não tem domínio público). O caminho abaixo cobre isso do zero, caso quisesse recriar ou usar outra plataforma:
 
 ### a) Banco de dados (PostgreSQL gerenciado)
 
@@ -156,52 +156,31 @@ O frontend também é empacotado como app nativo Android via [Capacitor](https:/
 - `frontend/android/` — projeto nativo Android completo (gerado pelo Capacitor)
 - Ícone e splash screen já gerados a partir da marca do BarberFlow
 - Menu lateral vira uma gaveta deslizante em telas de celular; botão físico de voltar do Android tratado
-- Um **APK de debug já compilado** está em `frontend/android/app/build/outputs/apk/debug/app-debug.apk` (uma cópia também ficou em `Desktop\BarberFlow-debug.apk`)
+- **Backend já publicado no Railway**, com Postgres, HTTPS e migrations rodando automaticamente a cada deploy (`https://api-production-c7f64.up.railway.app`)
+- **APK final já compilado e publicado**, apontando pra esse backend: [`BarberFlow.apk` no GitHub Releases](https://github.com/mlnolove/barberflow/releases/tag/android-debug-v1) (também em `Desktop\BarberFlow.apk` nesta máquina)
 
-**⚠️ Antes de instalar esse APK, uma coisa importa:** ele foi compilado apontando para o caminho relativo `/api`, que só existe quando tem um site abrindo ele — dentro do app nativo isso não resolve pra lugar nenhum ainda, porque não há backend publicado (a Fase 11 — Deploy do roadmap ainda não aconteceu). Ou seja: o app abre, mostra a tela de login, mas login ainda não vai funcionar até apontar pra um backend de verdade. Duas formas de resolver:
-
-**Opção 1 — Testar contra o backend rodando no seu PC (mesma rede Wi-Fi):**
-
-```bash
-# descubra o IP local do seu PC (Windows: ipconfig, procure "IPv4")
-# suba o backend aceitando conexões de fora do localhost:
-cd backend
-uvicorn app.main:app --host 0.0.0.0 --port 8000
-
-# rebuilde o app apontando pra esse IP:
-cd frontend
-VITE_API_URL=http://SEU_IP_LOCAL:8000/api npm run cap:sync
-cd android
-./gradlew.bat assembleDebug
-```
-
-**Opção 2 — Apontar pro backend já publicado (depois de fazer o deploy da seção 2):**
-
-```bash
-cd frontend
-VITE_API_URL=https://api.seusite.com/api npm run cap:sync
-cd android
-./gradlew.bat assembleDebug
-```
-
-Em ambos os casos, o CORS do backend precisa liberar a origem `https://localhost` (é de onde o WebView do app carrega) — já deixei isso configurado no `docker-compose.yml`; se você configurar `CORS_ORIGINS` manualmente em outro lugar, inclua esse valor também.
+Esse APK já funciona de ponta a ponta em qualquer rede — não depende de nenhum PC ligado. Criar conta e login completam de verdade.
 
 ### Instalando o APK no celular
 
-1. Copie o `.apk` pro celular (cabo USB, Google Drive, e-mail — qualquer forma)
-2. No celular, abra o arquivo — o Android vai pedir pra liberar "instalar de fontes desconhecidas" na primeira vez (normal para um APK de debug, fora da Play Store)
+1. Baixe o `BarberFlow.apk` pelo link acima direto no navegador do celular
+2. Abra o arquivo baixado — o Android vai pedir pra liberar "instalar de fontes desconhecidas" na primeira vez (normal para um APK fora da Play Store)
 3. Abre como qualquer app instalado
 
-### Gerando um novo APK depois de mudar o código
+### Gerando um novo APK (depois de mexer no código, ou se o backend mudar de endereço)
 
-Nesta máquina já ficou tudo instalado (JDK 21, Android SDK). Depois de mexer no código:
+Nesta máquina já ficou tudo instalado (JDK 21, Android SDK). O endereço do backend é definido em build-time, então se ele mudar de domínio é só reconstruir apontando pro novo:
 
 ```bash
 cd frontend
-npm run android:build:debug
+VITE_API_URL=https://SEU-BACKEND/api npm run cap:sync   # só se o endereço do backend mudou
+cd android
+./gradlew.bat assembleDebug
 ```
 
-O `.apk` novo aparece no mesmo caminho de sempre (`android/app/build/outputs/apk/debug/app-debug.apk`).
+Se só o código do app mudou (endereço do backend continua o mesmo), `npm run android:build:debug` dentro de `frontend/` já faz tudo. O `.apk` novo aparece em `android/app/build/outputs/apk/debug/app-debug.apk`.
+
+O CORS do backend precisa liberar a origem `https://localhost` (é de onde o WebView do app carrega) — já está configurado na variável `CORS_ORIGINS` do serviço no Railway e no `docker-compose.yml`.
 
 ### Se quiser desenvolver com interface gráfica (Android Studio)
 
@@ -219,5 +198,6 @@ Precisa de: conta de desenvolvedor Google Play (taxa única de US$25), gerar um 
 |---|---|---|
 | Local, com Docker | `docker compose up --build` | http://localhost:5173 |
 | Local, manual | `uvicorn app.main:app --reload` + `npm run dev` | http://localhost:5173 |
-| Produção | deploy no Railway/Render/Vercel (sem comando único — veja seção 2) | seu domínio |
-| App Android (debug) | `npm run android:build:debug` (dentro de `frontend/`) | instala o `.apk` gerado no celular |
+| Backend em produção | já está no ar (Railway) | https://api-production-c7f64.up.railway.app |
+| Frontend web em produção | ainda não publicado — veja seção 2 | — |
+| App Android | [baixar `BarberFlow.apk`](https://github.com/mlnolove/barberflow/releases/tag/android-debug-v1) | instala no celular, já funciona de ponta a ponta |
