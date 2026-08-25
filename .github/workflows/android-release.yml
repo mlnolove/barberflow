@@ -46,8 +46,14 @@ jobs:
           yes | sdkmanager --licenses > /dev/null || true
           sdkmanager "platform-tools" "platforms;android-36"
 
+      # "npm ci" em vez disso falha aqui: o package-lock.json foi gerado no
+      # Windows, e o binário nativo específico de plataforma do Rollup
+      # (@rollup/rollup-linux-x64-gnu) não fica resolvido corretamente num
+      # lockfile gerado noutro SO — bug conhecido do ecossistema npm/Rollup
+      # com optionalDependencies cross-platform. "npm install" deixa o npm
+      # resolver o binário certo na própria máquina Linux do runner.
       - name: Instalar dependências do frontend
-        run: npm ci
+        run: npm install
 
       # URL do backend publicado no Railway — é build-time porque o app
       # nativo carrega de https://localhost (sem o proxy /api do Vite que só
