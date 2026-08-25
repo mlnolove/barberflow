@@ -90,6 +90,12 @@ class AppointmentStatusHistory(UUIDPKMixin, Base):
     changed_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
+    changed_by_client_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("client_accounts.id", ondelete="SET NULL"), nullable=True
+    )
+    """Preenchido em vez de `changed_by_user_id` quando a mudança (ex.:
+    solicitação/cancelamento) partiu do CLIENTE, não da equipe — nunca os
+    dois ao mesmo tempo."""
     from_status: Mapped[AppointmentStatus] = mapped_column(
         Enum(AppointmentStatus, native_enum=False, length=20), nullable=False
     )
@@ -103,3 +109,4 @@ class AppointmentStatusHistory(UUIDPKMixin, Base):
 
     appointment: Mapped["Appointment"] = relationship(back_populates="status_history")
     changed_by: Mapped["User"] = relationship()  # noqa: F821
+    changed_by_client: Mapped["ClientAccount"] = relationship()  # noqa: F821

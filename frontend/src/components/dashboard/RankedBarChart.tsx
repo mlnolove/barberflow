@@ -9,7 +9,7 @@ interface RankedBarChartProps {
 
 export function RankedBarChart({ data, emptyLabel }: RankedBarChartProps) {
   if (data.length === 0) {
-    return <p className="flex h-full items-center justify-center text-sm text-slate-400">{emptyLabel}</p>;
+    return <p className="flex h-full items-center justify-center text-sm text-ink-600">{emptyLabel}</p>;
   }
 
   return (

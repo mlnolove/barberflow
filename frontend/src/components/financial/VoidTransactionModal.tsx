@@ -42,33 +42,29 @@ export function VoidTransactionModal({ transaction, onClose }: VoidTransactionMo
   return (
     <Modal title={`Estornar — ${transaction.description}`} onClose={onClose}>
       <form className="space-y-4" onSubmit={handleSubmit((v) => mutation.mutate(v))} noValidate>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
+        <p className="text-sm text-ink-500">
           Isso não apaga o lançamento original — cria uma transação de estorno vinculada a ele,
           mantendo o histórico completo.
         </p>
 
         <div>
-          <label htmlFor="reason" className="block text-sm font-medium">
+          <label htmlFor="reason" className="field-label">
             Motivo do estorno
           </label>
           <textarea
             id="reason"
             rows={3}
             placeholder="Ex.: Lançamento duplicado por engano"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             {...register("reason")}
           />
-          {errors.reason && <p className="mt-1 text-xs text-red-600">{errors.reason.message}</p>}
+          {errors.reason && <p className="field-error">{errors.reason.message}</p>}
         </div>
 
-        {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+        {serverError && <p className="text-sm text-red-400">{serverError}</p>}
 
         <div className="flex justify-end gap-2 pt-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-          >
+          <button type="button" onClick={onClose} className="btn-secondary">
             Voltar
           </button>
           <button

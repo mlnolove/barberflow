@@ -34,12 +34,9 @@ export function CustomersListPage() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Clientes</h1>
+        <h1 className="font-serif text-xl font-semibold text-white">Clientes</h1>
         {hasPermission("clients.create") && (
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-          >
+          <button onClick={() => setShowCreateModal(true)} className="btn-primary">
             Novo cliente
           </button>
         )}
@@ -53,7 +50,7 @@ export function CustomersListPage() {
             setPage(1);
           }}
           placeholder="Buscar por nome, telefone ou e-mail"
-          className="w-72 rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="w-72 rounded-md border border-white/[0.08] bg-ink-900 px-3 py-2 text-sm text-white placeholder:text-ink-600"
         />
         <select
           value={status}
@@ -61,7 +58,7 @@ export function CustomersListPage() {
             setStatus(e.target.value as StatusFilter);
             setPage(1);
           }}
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="rounded-md border border-white/[0.08] bg-ink-900 px-3 py-2 text-sm text-white"
         >
           <option value="active">Ativos</option>
           <option value="inactive">Inativos</option>
@@ -69,9 +66,9 @@ export function CustomersListPage() {
         </select>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+      <div className="table-card mt-4">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+          <thead className="table-head">
             <tr>
               <th className="px-4 py-3 font-medium">Nome</th>
               <th className="px-4 py-3 font-medium">Telefone</th>
@@ -82,21 +79,21 @@ export function CustomersListPage() {
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={4} className="px-4 py-6 text-center text-ink-500">
                   Carregando...
                 </td>
               </tr>
             )}
             {isError && (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-red-600">
+                <td colSpan={4} className="px-4 py-6 text-center text-red-400">
                   Não foi possível carregar os clientes.
                 </td>
               </tr>
             )}
             {data && data.items.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={4} className="px-4 py-6 text-center text-ink-500">
                   Nenhum cliente encontrado.
                 </td>
               </tr>
@@ -105,19 +102,13 @@ export function CustomersListPage() {
               <tr
                 key={customer.id}
                 onClick={() => navigate(`/clientes/${customer.id}`)}
-                className="cursor-pointer border-t border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900"
+                className="table-row text-white"
               >
                 <td className="px-4 py-3 font-medium">{customer.full_name}</td>
                 <td className="px-4 py-3">{customer.phone}</td>
                 <td className="px-4 py-3">{customer.email ?? "—"}</td>
                 <td className="px-4 py-3">
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                      customer.is_active
-                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
-                        : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
-                    }`}
-                  >
+                  <span className={customer.is_active ? "badge-active" : "badge-inactive"}>
                     {customer.is_active ? "Ativo" : "Inativo"}
                   </span>
                 </td>
@@ -128,7 +119,7 @@ export function CustomersListPage() {
       </div>
 
       {data && data.total > 0 && (
-        <div className="mt-4 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+        <div className="mt-4 flex items-center justify-between text-sm text-ink-500">
           <span>
             {data.total} cliente{data.total !== 1 ? "s" : ""} — página {page} de {totalPages}
           </span>
@@ -136,14 +127,14 @@ export function CustomersListPage() {
             <button
               disabled={page <= 1}
               onClick={() => setPage((p) => p - 1)}
-              className="rounded-md border border-slate-300 px-3 py-1 disabled:opacity-40 dark:border-slate-700"
+              className="rounded-md border border-white/[0.08] px-3 py-1 text-ink-300 disabled:opacity-40"
             >
               Anterior
             </button>
             <button
               disabled={page >= totalPages}
               onClick={() => setPage((p) => p + 1)}
-              className="rounded-md border border-slate-300 px-3 py-1 disabled:opacity-40 dark:border-slate-700"
+              className="rounded-md border border-white/[0.08] px-3 py-1 text-ink-300 disabled:opacity-40"
             >
               Próxima
             </button>

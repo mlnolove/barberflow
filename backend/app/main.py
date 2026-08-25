@@ -13,18 +13,35 @@ from app.core.exceptions import (
     InvalidOrExpiredTokenError,
     NotFoundError,
     PermissionDeniedError,
+    SubscriptionRequiredError,
 )
+from app.core.rate_limit import RateLimitExceededError
 from app.routers import (
     appointments,
+    audit_logs,
     auth,
+    client_appointments,
+    client_auth,
+    client_barbershops,
+    client_conversations,
+    client_favorites,
+    client_notifications,
+    client_profile,
+    client_queue,
+    conversations,
     customers,
     dashboard,
     employees,
     financial,
+    financial_account,
     health,
     inventory,
+    notifications,
+    payments,
+    queue,
     scheduling_settings,
     services,
+    subscription,
     suppliers,
     users,
 )
@@ -52,6 +69,8 @@ _STATUS_BY_ERROR: dict[type[DomainError], int] = {
     NotFoundError: 404,
     EmailAlreadyExistsError: 409,
     ConflictError: 409,
+    SubscriptionRequiredError: 402,
+    RateLimitExceededError: 429,
 }
 
 
@@ -82,3 +101,18 @@ app.include_router(suppliers.router)
 app.include_router(inventory.router)
 app.include_router(financial.router)
 app.include_router(dashboard.router)
+app.include_router(client_auth.router)
+app.include_router(client_profile.router)
+app.include_router(client_barbershops.router)
+app.include_router(client_appointments.router)
+app.include_router(client_favorites.router)
+app.include_router(conversations.router)
+app.include_router(client_conversations.router)
+app.include_router(subscription.router)
+app.include_router(financial_account.router)
+app.include_router(payments.router)
+app.include_router(audit_logs.router)
+app.include_router(notifications.router)
+app.include_router(client_notifications.router)
+app.include_router(queue.router)
+app.include_router(client_queue.router)

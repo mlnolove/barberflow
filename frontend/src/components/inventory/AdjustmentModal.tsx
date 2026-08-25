@@ -50,54 +50,46 @@ export function AdjustmentModal({ product, onClose }: AdjustmentModalProps) {
   return (
     <Modal title={`Ajustar estoque — ${product.name}`} onClose={onClose}>
       <form className="space-y-4" onSubmit={handleSubmit((v) => mutation.mutate(v))} noValidate>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Estoque no sistema: <span className="font-medium">{product.current_quantity}</span>
+        <p className="text-sm text-ink-500">
+          Estoque no sistema: <span className="font-medium text-white">{product.current_quantity}</span>
         </p>
 
         <div>
-          <label htmlFor="new_quantity" className="block text-sm font-medium">
+          <label htmlFor="new_quantity" className="field-label">
             Estoque físico (contagem real)
           </label>
           <input
             id="new_quantity"
             type="number"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             {...register("new_quantity")}
           />
           {errors.new_quantity && (
-            <p className="mt-1 text-xs text-red-600">{errors.new_quantity.message}</p>
+            <p className="field-error">{errors.new_quantity.message}</p>
           )}
         </div>
 
         <div>
-          <label htmlFor="reason" className="block text-sm font-medium">
+          <label htmlFor="reason" className="field-label">
             Motivo do ajuste
           </label>
           <textarea
             id="reason"
             rows={2}
             placeholder="Ex.: Contagem física divergente do sistema"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             {...register("reason")}
           />
-          {errors.reason && <p className="mt-1 text-xs text-red-600">{errors.reason.message}</p>}
+          {errors.reason && <p className="field-error">{errors.reason.message}</p>}
         </div>
 
-        {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+        {serverError && <p className="text-sm text-red-400">{serverError}</p>}
 
         <div className="flex justify-end gap-2 pt-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-          >
+          <button type="button" onClick={onClose} className="btn-secondary">
             Cancelar
           </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
-          >
+          <button type="submit" disabled={isSubmitting} className="btn-primary">
             {isSubmitting ? "Salvando..." : "Confirmar ajuste"}
           </button>
         </div>

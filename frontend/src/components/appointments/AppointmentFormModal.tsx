@@ -86,12 +86,12 @@ export function AppointmentFormModal({ defaultDate, onClose }: AppointmentFormMo
     <Modal title="Novo agendamento" onClose={onClose}>
       <form className="space-y-4" onSubmit={handleSubmit((v) => mutation.mutate(v))} noValidate>
         <div>
-          <label htmlFor="customer_id" className="block text-sm font-medium">
+          <label htmlFor="customer_id" className="block text-sm font-medium text-ink-300">
             Cliente
           </label>
           <select
             id="customer_id"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="mt-1 w-full rounded-md border border-white/[0.08] bg-ink-800 px-3 py-2 text-sm text-white"
             {...register("customer_id")}
           >
             <option value="">Selecione...</option>
@@ -102,17 +102,17 @@ export function AppointmentFormModal({ defaultDate, onClose }: AppointmentFormMo
             ))}
           </select>
           {errors.customer_id && (
-            <p className="mt-1 text-xs text-red-600">{errors.customer_id.message}</p>
+            <p className="mt-1 text-xs text-red-400">{errors.customer_id.message}</p>
           )}
         </div>
 
         <div>
-          <label htmlFor="service_id" className="block text-sm font-medium">
+          <label htmlFor="service_id" className="block text-sm font-medium text-ink-300">
             Serviço
           </label>
           <select
             id="service_id"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="mt-1 w-full rounded-md border border-white/[0.08] bg-ink-800 px-3 py-2 text-sm text-white"
             {...register("service_id")}
           >
             <option value="">Selecione...</option>
@@ -123,17 +123,17 @@ export function AppointmentFormModal({ defaultDate, onClose }: AppointmentFormMo
             ))}
           </select>
           {errors.service_id && (
-            <p className="mt-1 text-xs text-red-600">{errors.service_id.message}</p>
+            <p className="mt-1 text-xs text-red-400">{errors.service_id.message}</p>
           )}
         </div>
 
         <div>
-          <label htmlFor="employee_id" className="block text-sm font-medium">
+          <label htmlFor="employee_id" className="block text-sm font-medium text-ink-300">
             Profissional
           </label>
           <select
             id="employee_id"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="mt-1 w-full rounded-md border border-white/[0.08] bg-ink-800 px-3 py-2 text-sm text-white"
             {...register("employee_id")}
           >
             <option value="">Selecione...</option>
@@ -144,63 +144,63 @@ export function AppointmentFormModal({ defaultDate, onClose }: AppointmentFormMo
             ))}
           </select>
           {errors.employee_id && (
-            <p className="mt-1 text-xs text-red-600">{errors.employee_id.message}</p>
+            <p className="mt-1 text-xs text-red-400">{errors.employee_id.message}</p>
           )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="date" className="block text-sm font-medium">
+            <label htmlFor="date" className="block text-sm font-medium text-ink-300">
               Data
             </label>
             <input
               id="date"
               type="date"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="mt-1 w-full rounded-md border border-white/[0.08] bg-ink-800 px-3 py-2 text-sm text-white"
               {...register("date")}
             />
-            {errors.date && <p className="mt-1 text-xs text-red-600">{errors.date.message}</p>}
+            {errors.date && <p className="mt-1 text-xs text-red-400">{errors.date.message}</p>}
           </div>
           <div>
-            <label htmlFor="time" className="block text-sm font-medium">
+            <label htmlFor="time" className="block text-sm font-medium text-ink-300">
               Hora
             </label>
             <input
               id="time"
               type="time"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="mt-1 w-full rounded-md border border-white/[0.08] bg-ink-800 px-3 py-2 text-sm text-white"
               {...register("time")}
             />
-            {errors.time && <p className="mt-1 text-xs text-red-600">{errors.time.message}</p>}
+            {errors.time && <p className="mt-1 text-xs text-red-400">{errors.time.message}</p>}
           </div>
         </div>
 
         <div>
-          <label htmlFor="notes" className="block text-sm font-medium">
+          <label htmlFor="notes" className="block text-sm font-medium text-ink-300">
             Observações (opcional)
           </label>
           <textarea
             id="notes"
             rows={2}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="mt-1 w-full rounded-md border border-white/[0.08] bg-ink-800 px-3 py-2 text-sm text-white"
             {...register("notes")}
           />
         </div>
 
-        {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+        {serverError && <p className="text-sm text-red-400">{serverError}</p>}
 
         <div className="flex justify-end gap-2 pt-2">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+            className="rounded-md border border-white/[0.08] px-4 py-2 text-sm text-ink-300 hover:bg-ink-800"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
+            className="rounded-md bg-gold px-4 py-2 text-sm font-medium text-ink-950 hover:opacity-90 disabled:opacity-60"
           >
             {isSubmitting ? "Agendando..." : "Agendar"}
           </button>

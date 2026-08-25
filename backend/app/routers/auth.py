@@ -4,11 +4,14 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.deps import CurrentUserDep
 from app.core.exceptions import InvalidOrExpiredTokenError
+from app.core.rate_limit import rate_limit
 from app.db.session import get_db
 from app.schemas.auth import AuthResponse, LoginRequest, TenantSignupRequest
+from app.schemas.client_auth import PasswordResetConfirm, PasswordResetRequest
 from app.schemas.tenant import TenantRead
 from app.schemas.user import UserRead
-from app.services import auth_service
+from app.services import auth_service, password_reset_service
+from app.services.password_reset_service import ResetRealm
 from app.services.permission_service import get_effective_permissions
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -48,14 +51,21 @@ def _to_auth_response(db: Session, result: auth_service.AuthResult) -> AuthRespo
     )
 
 
-@router.post("/signup", response_model=AuthResponse, status_code=201)
+@router.post(
+    "/signup",
+    response_model=AuthResponse,
+    status_code=201,
+    dependencies=[Depends(rate_limit("staff_signup"))],
+)
 def signup(payload: TenantSignupRequest, response: Response, db: Session = Depends(get_db)):
     result = auth_service.signup_tenant(db, payload)
     _set_refresh_cookie(response, result.refresh_token)
     return _to_auth_response(db, result)
 
 
-@router.post("/login", response_model=AuthResponse)
+@router.post(
+    "/login", response_model=AuthResponse, dependencies=[Depends(rate_limit("staff_login"))]
+)
 def login(payload: LoginRequest, response: Response, db: Session = Depends(get_db)):
     result = auth_service.login(db, payload)
     _set_refresh_cookie(response, result.refresh_token)
@@ -84,3 +94,17 @@ def logout(request: Request, response: Response, db: Session = Depends(get_db)):
 def me(current_user: CurrentUserDep, db: Session = Depends(get_db)):
     user_read = UserRead.model_validate(current_user.user)
     return user_read.model_copy(update={"permissions": sorted(current_user.permissions)})
+
+
+@router.post(
+    "/password-reset/request",
+    status_code=204,
+    dependencies=[Depends(rate_limit("staff_password_reset"))],
+)
+def request_password_reset(payload: PasswordResetRequest, db: Session = Depends(get_db)):
+    password_reset_service.request_reset(db, ResetRealm.STAFF, payload.email)
+
+
+@router.post("/password-reset/confirm", status_code=204)
+def confirm_password_reset(payload: PasswordResetConfirm, db: Session = Depends(get_db)):
+    password_reset_service.confirm_reset(db, payload.token, payload.new_password)

@@ -61,11 +61,11 @@ export function AgendaPage() {
   return (
     <div className="p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">Agenda</h1>
+        <h1 className="font-serif text-xl font-semibold text-white">Agenda</h1>
         {hasPermission("appointments.create") && (
           <button
             onClick={() => setShowCreateModal(true)}
-            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+            className="rounded-md bg-gold px-4 py-2 text-sm font-medium text-ink-950 hover:opacity-90"
           >
             Novo agendamento
           </button>
@@ -73,15 +73,13 @@ export function AgendaPage() {
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        <div className="flex rounded-md border border-slate-300 text-sm dark:border-slate-700">
+        <div className="flex rounded-md border border-white/[0.08] text-sm">
           {(["day", "week", "month"] as ViewMode[]).map((mode) => (
             <button
               key={mode}
               onClick={() => setView(mode)}
               className={`px-3 py-1.5 ${
-                view === mode
-                  ? "bg-brand text-white"
-                  : "hover:bg-slate-50 dark:hover:bg-slate-800"
+                view === mode ? "bg-gold text-ink-950" : "text-ink-300 hover:bg-ink-800"
               }`}
             >
               {mode === "day" ? "Dia" : mode === "week" ? "Semana" : "Mês"}
@@ -92,7 +90,7 @@ export function AgendaPage() {
         <div className="flex items-center gap-1">
           <button
             onClick={() => shiftByView(-1)}
-            className="rounded-md border border-slate-300 px-2 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+            className="rounded-md border border-white/[0.08] px-2 py-1.5 text-sm text-ink-300 hover:bg-ink-800"
           >
             ←
           </button>
@@ -100,11 +98,11 @@ export function AgendaPage() {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="rounded-md border border-white/[0.08] bg-ink-900 px-3 py-1.5 text-sm text-white"
           />
           <button
             onClick={() => shiftByView(1)}
-            className="rounded-md border border-slate-300 px-2 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+            className="rounded-md border border-white/[0.08] px-2 py-1.5 text-sm text-ink-300 hover:bg-ink-800"
           >
             →
           </button>
@@ -113,7 +111,7 @@ export function AgendaPage() {
         <select
           value={employeeId}
           onChange={(e) => setEmployeeId(e.target.value)}
-          className="rounded-md border border-slate-300 px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="rounded-md border border-white/[0.08] bg-ink-900 px-3 py-1.5 text-sm text-white"
         >
           <option value="">Todos os profissionais</option>
           {employeesPage?.items.map((e) => (
@@ -125,13 +123,13 @@ export function AgendaPage() {
       </div>
 
       <div className="mt-6">
-        {isLoading && <p className="text-slate-500">Carregando...</p>}
-        {isError && <p className="text-red-600">Não foi possível carregar a agenda.</p>}
+        {isLoading && <p className="text-ink-500">Carregando...</p>}
+        {isError && <p className="text-red-400">Não foi possível carregar a agenda.</p>}
 
         {!isLoading && !isError && view === "day" && (
           <div className="space-y-3">
             {dayAppointments.length === 0 && (
-              <p className="text-slate-500">Nenhum agendamento neste dia.</p>
+              <p className="text-ink-500">Nenhum agendamento neste dia.</p>
             )}
             {dayAppointments.map((appointment) => (
               <AppointmentRow key={appointment.id} appointment={appointment} />

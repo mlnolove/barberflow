@@ -3,6 +3,7 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
+from app.models.role import Role
 from app.models.user import User
 from app.repositories.base import TenantScopedRepository
 
@@ -27,4 +28,17 @@ def find_user_by_email_global(db: Session, email: str) -> User | None:
     Seguro porque `email` é único globalmente (ver app.models.user.User).
     """
     stmt = select(User).options(joinedload(User.role)).where(User.email == email)
+    return db.execute(stmt).scalar_one_or_none()
+
+
+def find_tenant_owner(db: Session, tenant_id: uuid.UUID) -> User | None:
+    """Usado para notificar o dono de eventos que não têm um destinatário
+    específico já definido (novo agendamento pendente, cliente cancelou,
+    pagamento confirmado/falhou) — o OWNER é sempre o único papel garantido
+    a existir e a ver tudo (seção 4)."""
+    stmt = (
+        select(User)
+        .join(Role, User.role_id == Role.id)
+        .where(User.tenant_id == tenant_id, Role.code == "OWNER", User.is_active.is_(True))
+    )
     return db.execute(stmt).scalar_one_or_none()

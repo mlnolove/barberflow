@@ -20,7 +20,7 @@ export function PaymentMethodChart({ data, emptyLabel }: PaymentMethodChartProps
   const points = data.map((d) => ({ label: d.label, value: Number(d.value) }));
 
   if (points.length === 0 || points.every((p) => p.value === 0)) {
-    return <p className="flex h-full items-center justify-center text-sm text-slate-400">{emptyLabel}</p>;
+    return <p className="flex h-full items-center justify-center text-sm text-ink-600">{emptyLabel}</p>;
   }
 
   return (

@@ -93,35 +93,35 @@ export function ProductFormModal({ product, onClose }: ProductFormModalProps) {
         noValidate
       >
         <div>
-          <label htmlFor="name" className="block text-sm font-medium">
+          <label htmlFor="name" className="field-label">
             Nome
           </label>
           <input
             id="name"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             {...register("name")}
           />
-          {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
+          {errors.name && <p className="field-error">{errors.name.message}</p>}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="sku" className="block text-sm font-medium">
+            <label htmlFor="sku" className="field-label">
               SKU (opcional)
             </label>
             <input
               id="sku"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="field-input"
               {...register("sku")}
             />
           </div>
           <div>
-            <label htmlFor="category" className="block text-sm font-medium">
+            <label htmlFor="category" className="field-label">
               Categoria (opcional)
             </label>
             <input
               id="category"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="field-input"
               {...register("category")}
             />
           </div>
@@ -129,57 +129,57 @@ export function ProductFormModal({ product, onClose }: ProductFormModalProps) {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="cost_price" className="block text-sm font-medium">
+            <label htmlFor="cost_price" className="field-label">
               Preço de custo (R$)
             </label>
             <input
               id="cost_price"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="field-input"
               {...register("cost_price")}
             />
             {errors.cost_price && (
-              <p className="mt-1 text-xs text-red-600">{errors.cost_price.message}</p>
+              <p className="field-error">{errors.cost_price.message}</p>
             )}
           </div>
           <div>
-            <label htmlFor="sale_price" className="block text-sm font-medium">
+            <label htmlFor="sale_price" className="field-label">
               Preço de venda (R$)
             </label>
             <input
               id="sale_price"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="field-input"
               {...register("sale_price")}
             />
             {errors.sale_price && (
-              <p className="mt-1 text-xs text-red-600">{errors.sale_price.message}</p>
+              <p className="field-error">{errors.sale_price.message}</p>
             )}
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="min_stock" className="block text-sm font-medium">
+            <label htmlFor="min_stock" className="field-label">
               Estoque mínimo
             </label>
             <input
               id="min_stock"
               type="number"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="field-input"
               {...register("min_stock")}
             />
             {errors.min_stock && (
-              <p className="mt-1 text-xs text-red-600">{errors.min_stock.message}</p>
+              <p className="field-error">{errors.min_stock.message}</p>
             )}
           </div>
           {!isEditing && (
             <div>
-              <label htmlFor="initial_quantity" className="block text-sm font-medium">
+              <label htmlFor="initial_quantity" className="field-label">
                 Estoque inicial
               </label>
               <input
                 id="initial_quantity"
                 type="number"
-                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                className="field-input"
                 {...register("initial_quantity")}
               />
             </div>
@@ -187,12 +187,12 @@ export function ProductFormModal({ product, onClose }: ProductFormModalProps) {
         </div>
 
         <div>
-          <label htmlFor="supplier_id" className="block text-sm font-medium">
+          <label htmlFor="supplier_id" className="field-label">
             Fornecedor (opcional)
           </label>
           <select
             id="supplier_id"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             {...register("supplier_id")}
           >
             <option value="">Nenhum</option>
@@ -205,32 +205,24 @@ export function ProductFormModal({ product, onClose }: ProductFormModalProps) {
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium">
+          <label htmlFor="description" className="field-label">
             Descrição (opcional)
           </label>
           <textarea
             id="description"
             rows={2}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             {...register("description")}
           />
         </div>
 
-        {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+        {serverError && <p className="text-sm text-red-400">{serverError}</p>}
 
         <div className="flex justify-end gap-2 pt-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-          >
+          <button type="button" onClick={onClose} className="btn-secondary">
             Cancelar
           </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
-          >
+          <button type="submit" disabled={isSubmitting} className="btn-primary">
             {isSubmitting ? "Salvando..." : "Salvar"}
           </button>
         </div>

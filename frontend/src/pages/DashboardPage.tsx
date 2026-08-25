@@ -27,31 +27,29 @@ function SimpleDashboard() {
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-semibold">Olá, {user?.full_name}</h1>
-      <p className="text-sm text-slate-500 dark:text-slate-400">Seus atendimentos de hoje</p>
+      <h1 className="font-serif text-xl font-semibold text-white">Olá, {user?.full_name}</h1>
+      <p className="text-sm text-ink-500">Seus atendimentos de hoje</p>
 
-      <div className="mt-6 rounded-xl border border-slate-200 dark:border-slate-800">
-        {isLoading && <p className="px-4 py-6 text-center text-sm text-slate-400">Carregando...</p>}
+      <div className="mt-6 rounded-xl border border-white/[0.06] bg-ink-900">
+        {isLoading && <p className="px-4 py-6 text-center text-sm text-ink-600">Carregando...</p>}
         {appointments && appointments.length === 0 && (
-          <p className="px-4 py-6 text-center text-sm text-slate-400">
-            Nenhum atendimento hoje.
-          </p>
+          <p className="px-4 py-6 text-center text-sm text-ink-600">Nenhum atendimento hoje.</p>
         )}
         {appointments && appointments.length > 0 && (
-          <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+          <ul className="divide-y divide-white/[0.05]">
             {appointments.map((a) => (
               <li key={a.id} className="flex items-center gap-4 px-4 py-3 text-sm">
-                <span className="w-12 shrink-0 font-semibold tabular-nums">
+                <span className="w-12 shrink-0 font-mono font-semibold tabular-nums text-white">
                   {new Date(a.starts_at).toLocaleTimeString("pt-BR", {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}
                 </span>
                 <div className="flex-1">
-                  <p className="font-medium">{a.customer.full_name}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{a.service.name}</p>
+                  <p className="font-medium text-white">{a.customer.full_name}</p>
+                  <p className="text-xs text-ink-500">{a.service.name}</p>
                 </div>
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                <span className="rounded-full bg-ink-800 px-2 py-0.5 text-xs text-ink-400">
                   {a.status}
                 </span>
               </li>
@@ -71,16 +69,16 @@ function FullDashboard() {
   });
 
   if (isLoading) {
-    return <div className="p-6 text-slate-500">Carregando...</div>;
+    return <div className="p-6 text-ink-500">Carregando...</div>;
   }
 
   if (isError || !data) {
-    return <div className="p-6 text-red-600">Não foi possível carregar o dashboard.</div>;
+    return <div className="p-6 text-red-400">Não foi possível carregar o dashboard.</div>;
   }
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-semibold">Olá, {user?.full_name}</h1>
+      <h1 className="font-serif text-xl font-semibold text-white">Olá, {user?.full_name}</h1>
 
       <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         <StatTile label="Faturamento hoje" value={formatMoney(data.kpis.revenue_today)} />

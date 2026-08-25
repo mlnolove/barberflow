@@ -4,7 +4,11 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.deps import CurrentUser, require_permission
+from app.core.exceptions import NotFoundError
 from app.db.session import get_db
+from app.models.tenant_photo import TenantPhoto
+from app.repositories.tenant_photo_repository import TenantPhotoRepository
+from app.schemas.barbershop_public import TenantPhotoCreate, TenantPhotoRead
 from app.schemas.scheduling import (
     BlockedDateCreate,
     BlockedDateRead,
@@ -78,3 +82,36 @@ def delete_blocked_date(
     db: Session = Depends(get_db),
 ):
     scheduling_settings_service.delete_blocked_date(db, current_user.tenant_id, blocked_date_id)
+
+
+@router.get("/photos", response_model=list[TenantPhotoRead])
+def list_photos(
+    current_user: CurrentUser = Depends(require_permission("settings.view")),
+    db: Session = Depends(get_db),
+):
+    return TenantPhotoRepository(db, current_user.tenant_id).list_ordered()
+
+
+@router.post("/photos", response_model=TenantPhotoRead, status_code=201)
+def add_photo(
+    payload: TenantPhotoCreate,
+    current_user: CurrentUser = Depends(require_permission("settings.edit")),
+    db: Session = Depends(get_db),
+):
+    photo = TenantPhotoRepository(db, current_user.tenant_id).add(
+        TenantPhoto(url=payload.url, position=payload.position)
+    )
+    db.commit()
+    return photo
+
+
+@router.delete("/photos/{photo_id}", status_code=204)
+def delete_photo(
+    photo_id: uuid.UUID,
+    current_user: CurrentUser = Depends(require_permission("settings.edit")),
+    db: Session = Depends(get_db),
+):
+    deleted = TenantPhotoRepository(db, current_user.tenant_id).delete_by_id(photo_id)
+    if not deleted:
+        raise NotFoundError("Foto não encontrada.")
+    db.commit()

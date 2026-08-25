@@ -17,6 +17,7 @@ MODULES = (
     "settings",
     "audit",
     "notifications",
+    "messages",
 )
 
 _ACTIONS_BY_MODULE: dict[str, tuple[str, ...]] = {
@@ -30,6 +31,7 @@ _ACTIONS_BY_MODULE: dict[str, tuple[str, ...]] = {
     "settings": ("view", "edit"),
     "audit": ("view",),
     "notifications": ("view", "manage"),
+    "messages": ("view", "reply"),
 }
 
 ALL_PERMISSIONS: list[str] = [
@@ -73,6 +75,8 @@ DEFAULT_ROLE_PERMISSIONS: dict[str, list[str]] = {
         "employees.view",
         "reports.view",
         "notifications.view",
+        "messages.view",
+        "messages.reply",
     ],
     ROLE_BARBER: [
         "appointments.view",
@@ -96,5 +100,7 @@ DEFAULT_ROLE_PERMISSIONS: dict[str, list[str]] = {
         "finance.view",
         "finance.create",
         "notifications.view",
+        "messages.view",
+        "messages.reply",
     ],
 }

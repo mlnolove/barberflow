@@ -7,6 +7,7 @@ import type {
   BusinessHoursUpdatePayload,
   TenantUpdatePayload,
 } from "@/types/settings";
+import type { TenantPhoto } from "@/types/tenantPhoto";
 
 export async function getTenantSettings(): Promise<Tenant> {
   const { data } = await api.get<Tenant>("/settings/tenant");
@@ -43,4 +44,18 @@ export async function createBlockedDate(payload: BlockedDateCreatePayload): Prom
 
 export async function deleteBlockedDate(id: string): Promise<void> {
   await api.delete(`/settings/blocked-dates/${id}`);
+}
+
+export async function listTenantPhotos(): Promise<TenantPhoto[]> {
+  const { data } = await api.get<TenantPhoto[]>("/settings/photos");
+  return data;
+}
+
+export async function addTenantPhoto(url: string, position: number): Promise<TenantPhoto> {
+  const { data } = await api.post<TenantPhoto>("/settings/photos", { url, position });
+  return data;
+}
+
+export async function deleteTenantPhoto(id: string): Promise<void> {
+  await api.delete(`/settings/photos/${id}`);
 }

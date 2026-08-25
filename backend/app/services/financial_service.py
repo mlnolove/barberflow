@@ -8,6 +8,7 @@ from app.models.financial_transaction import FinancialTransaction, FinancialTran
 from app.repositories.financial_transaction_repository import FinancialTransactionRepository
 from app.repositories.payment_method_repository import PaymentMethodRepository
 from app.schemas.financial_transaction import FinancialSummary, FinancialTransactionCreate
+from app.services import audit_service
 
 _OPPOSITE_TYPE = {
     FinancialTransactionType.INCOME: FinancialTransactionType.EXPENSE,
@@ -121,5 +122,17 @@ def void_transaction(
         )
     )
     original.is_voided = True
+
+    if user_id is not None:
+        audit_service.log_user_action(
+            db,
+            tenant_id=tenant_id,
+            user_id=user_id,
+            action="financial_transaction.void",
+            resource_type="financial_transaction",
+            resource_id=original.id,
+            metadata={"amount": str(original.amount), "reason": reason},
+        )
+
     db.commit()
     return get_transaction(db, tenant_id, reversal.id)

@@ -3,29 +3,16 @@
 @tailwind utilities;
 
 :root {
-  --color-brand: #0f172a;
-  --color-brand-secondary: #2563eb;
+  /* Identidade "Noir" (nova, seção de design do Figma) — continua
+     sobrescrevível por tenant via Configurações > Aparência
+     (applyBrandColors em lib/theme.ts), exatamente como antes. */
+  --color-brand: #c8a65e;
+  --color-brand-secondary: #8a7048;
 
-  /* Paleta de gráficos (dataviz) — modo claro */
-  --chart-text-secondary: #52514e;
-  --chart-muted: #898781;
-  --chart-grid: #e1e0d9;
-  --chart-baseline: #c3c2b7;
-  --chart-series-1: #2a78d6;
-  --chart-series-2: #eb6834;
-  --chart-series-3: #1baf7a;
-  --chart-series-4: #eda100;
-  --chart-series-5: #e87ba4;
-  --chart-good: #0ca30c;
-  --chart-warning: #fab219;
-  --chart-critical: #d03b3b;
-  --chart-tooltip-bg: #ffffff;
-  --chart-tooltip-border: #e2e8f0;
-  --chart-tooltip-text: #0f172a;
-}
-
-.dark {
-  /* Paleta de gráficos (dataviz) — modo escuro */
+  /* Paleta de gráficos (dataviz) — única, já que o Noir não tem modo claro
+     (mesmo raciocínio do body abaixo: antes variava com .dark, que por sua
+     vez seguia o SO — em SO claro os gráficos ficavam com cores erradas
+     sobre o fundo escuro fixo). Valores são os que antes viviam em .dark. */
   --chart-text-secondary: #c3c2b7;
   --chart-muted: #898781;
   --chart-grid: #2c2c2a;
@@ -43,6 +30,48 @@
   --chart-tooltip-text: #f1f5f9;
 }
 
+/* O design "Noir" do Figma só especifica um modo (escuro) — não existe
+   variante clara desenhada. Em vez de inventar uma, o app roda sempre
+   nesse visual; a infraestrutura de toggle claro/escuro (.dark, lib/theme
+   initTheme) continua no código, sem efeito visual por enquanto. */
 body {
-  @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+  @apply bg-ink-950 text-white dark:bg-ink-950 dark:text-white;
+}
+
+/* Utilitários compartilhados por formulários do painel do dono (modais de
+   criação/edição) — evita repetir a mesma classe longa em dezenas de
+   campos/botões espalhados por components/*​/​*FormModal.tsx. */
+@layer components {
+  .field-label {
+    @apply block text-sm font-medium text-ink-300;
+  }
+  .field-input {
+    @apply mt-1 w-full rounded-md border border-white/[0.08] bg-ink-800 px-3 py-2 text-sm text-white placeholder:text-ink-600;
+  }
+  .field-error {
+    @apply mt-1 text-xs text-red-400;
+  }
+  .btn-primary {
+    @apply rounded-md bg-gold px-4 py-2 text-sm font-medium text-ink-950 hover:opacity-90 disabled:opacity-60;
+  }
+  .btn-secondary {
+    @apply rounded-md border border-white/[0.08] px-4 py-2 text-sm text-ink-300 hover:bg-ink-800 disabled:opacity-60;
+  }
+
+  /* Listagens em tabela (Clientes, Serviços, Profissionais, Estoque...) */
+  .table-card {
+    @apply overflow-x-auto rounded-xl border border-white/[0.06] bg-ink-900;
+  }
+  .table-head {
+    @apply bg-ink-800/60 text-ink-500;
+  }
+  .table-row {
+    @apply cursor-pointer border-t border-white/[0.05] hover:bg-ink-800/40;
+  }
+  .badge-active {
+    @apply rounded-full bg-emerald-950/40 px-2 py-0.5 text-xs font-medium text-emerald-300;
+  }
+  .badge-inactive {
+    @apply rounded-full bg-ink-800 px-2 py-0.5 text-xs font-medium text-ink-400;
+  }
 }

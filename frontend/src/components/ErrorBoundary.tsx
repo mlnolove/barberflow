@@ -29,23 +29,19 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   render() {
     if (this.state.error) {
       return (
-        <div className="flex min-h-screen items-center justify-center bg-slate-950 p-6 text-slate-100">
+        <div className="flex min-h-screen items-center justify-center bg-ink-950 p-6 text-white">
           <div className="max-w-md">
-            <h1 className="text-lg font-semibold text-red-400">Algo deu errado</h1>
-            <p className="mt-2 text-sm text-slate-300">
+            <h1 className="font-serif text-lg font-semibold text-red-400">Algo deu errado</h1>
+            <p className="mt-2 text-sm text-ink-300">
               A aplicação encontrou um erro e não conseguiu continuar. Detalhes abaixo — envie
               essa mensagem se for reportar o problema.
             </p>
-            <pre className="mt-4 max-h-64 overflow-auto whitespace-pre-wrap rounded-md bg-slate-900 p-3 text-xs text-red-300">
+            <pre className="mt-4 max-h-64 overflow-auto whitespace-pre-wrap rounded-md border border-white/[0.06] bg-ink-900 p-3 text-xs text-red-300">
               {this.state.error.message}
               {"\n"}
               {this.state.error.stack}
             </pre>
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="mt-4 rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-            >
+            <button type="button" onClick={() => window.location.reload()} className="btn-primary mt-4">
               Recarregar
             </button>
           </div>

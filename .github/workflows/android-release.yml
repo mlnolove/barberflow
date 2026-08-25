@@ -1,0 +1,87 @@
+name: Build and release Android APK
+
+# Duas formas de disparar, de propósito — nunca em todo push pra main (isso
+# criaria uma release nova a cada commit, inclusive os que não tocam no
+# frontend):
+#   1. Empurrando uma tag "android-v*" (ex.: git tag android-v2 && git push --tags)
+#   2. Clicando em "Run workflow" na aba Actions do GitHub (sem precisar de tag)
+on:
+  push:
+    tags:
+      - "android-v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Configurar JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - name: Configurar Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Instalar plataforma do Android SDK usada pelo projeto
+        run: |
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager "platform-tools" "platforms;android-36"
+
+      - name: Instalar dependências do frontend
+        run: npm ci
+
+      # URL do backend publicado no Railway — é build-time porque o app
+      # nativo carrega de https://localhost (sem o proxy /api do Vite que só
+      # existe em desenvolvimento). Atualize esta linha se o backend mudar
+      # de domínio.
+      - name: Build do frontend e sincronização com o projeto Android
+        env:
+          VITE_API_URL: https://api-production-c7f64.up.railway.app/api
+        run: npm run cap:sync
+
+      - name: Permitir execução do gradlew
+        run: chmod +x android/gradlew
+
+      - name: Compilar o APK de debug
+        working-directory: frontend/android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Definir tag da release
+        id: tag
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "tag=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=android-build-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publicar release no GitHub com o APK anexado
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: "BarberFlow Android — build ${{ github.run_number }}"
+          body: |
+            APK gerado automaticamente pelo GitHub Actions a partir do commit ${{ github.sha }}.
+
+            Build de debug (não assinado para a Play Store) — instale liberando
+            "fontes desconhecidas" no Android na primeira vez.
+          files: frontend/android/app/build/outputs/apk/debug/app-debug.apk

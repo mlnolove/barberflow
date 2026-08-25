@@ -52,23 +52,23 @@ export function ProductDetailPage() {
   });
 
   if (isLoading) {
-    return <div className="p-6 text-slate-500">Carregando...</div>;
+    return <div className="p-6 text-ink-500">Carregando...</div>;
   }
 
   if (!product) {
-    return <div className="p-6 text-slate-500">Produto não encontrado.</div>;
+    return <div className="p-6 text-ink-500">Produto não encontrado.</div>;
   }
 
   return (
     <div className="p-6">
-      <Link to="/estoque" className="text-sm text-brand-secondary hover:underline">
+      <Link to="/estoque" className="text-sm text-gold hover:underline">
         ← Voltar para estoque
       </Link>
 
       <div className="mt-3 flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold">{product.name}</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <h1 className="font-serif text-xl font-semibold text-white">{product.name}</h1>
+          <p className="text-sm text-ink-500">
             {product.sku && `SKU ${product.sku} · `}
             {product.category ?? "Sem categoria"}
           </p>
@@ -76,7 +76,7 @@ export function ProductDetailPage() {
         {hasPermission("inventory.edit") && (
           <button
             onClick={() => setModal({ kind: "edit" })}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+            className="btn-secondary"
           >
             Editar
           </button>
@@ -84,22 +84,26 @@ export function ProductDetailPage() {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Estoque atual</p>
-          <p className="mt-1 text-2xl font-semibold">{product.current_quantity}</p>
+        <div className="rounded-xl border border-white/[0.06] bg-ink-900 p-4">
+          <p className="text-xs font-medium text-ink-500">Estoque atual</p>
+          <p className="mt-1 font-mono text-2xl font-semibold text-white">
+            {product.current_quantity}
+          </p>
           {product.is_low_stock && (
-            <p className="mt-1 text-xs font-medium text-red-600">
+            <p className="mt-1 text-xs font-medium text-red-400">
               ⚠️ Estoque baixo (mínimo: {product.min_stock})
             </p>
           )}
         </div>
-        <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Preço de venda</p>
-          <p className="mt-1 text-2xl font-semibold">{formatPrice(product.sale_price)}</p>
+        <div className="rounded-xl border border-white/[0.06] bg-ink-900 p-4">
+          <p className="text-xs font-medium text-ink-500">Preço de venda</p>
+          <p className="mt-1 font-mono text-2xl font-semibold text-gold">
+            {formatPrice(product.sale_price)}
+          </p>
         </div>
-        <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Fornecedor</p>
-          <p className="mt-1 text-sm">{product.supplier?.name ?? "—"}</p>
+        <div className="rounded-xl border border-white/[0.06] bg-ink-900 p-4">
+          <p className="text-xs font-medium text-ink-500">Fornecedor</p>
+          <p className="mt-1 text-sm text-white">{product.supplier?.name ?? "—"}</p>
         </div>
       </div>
 
@@ -107,38 +111,38 @@ export function ProductDetailPage() {
         <div className="mt-6 flex flex-wrap gap-2">
           <button
             onClick={() => setModal({ kind: "movement", type: "ENTRY" })}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+            className="btn-secondary"
           >
             + Adicionar estoque
           </button>
           <button
             onClick={() => setModal({ kind: "movement", type: "RETURN" })}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+            className="btn-secondary"
           >
             Registrar devolução
           </button>
           <button
             onClick={() => setModal({ kind: "movement", type: "EXIT" })}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+            className="btn-secondary"
           >
             − Retirar estoque
           </button>
           <button
             onClick={() => setModal({ kind: "movement", type: "LOSS" })}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+            className="btn-secondary"
           >
             Registrar perda
           </button>
           <button
             onClick={() => setModal({ kind: "movement", type: "SALE" })}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+            className="btn-secondary"
           >
             Registrar venda
           </button>
           {hasPermission("inventory.adjust") && (
             <button
               onClick={() => setModal({ kind: "adjust" })}
-              className="rounded-md border border-amber-300 px-3 py-1.5 text-sm text-amber-700 hover:bg-amber-50 dark:border-amber-800 dark:text-amber-400 dark:hover:bg-amber-950"
+              className="rounded-md border border-amber-800/40 px-3 py-1.5 text-sm text-amber-300 hover:bg-amber-950/40"
             >
               Ajustar estoque
             </button>
@@ -146,12 +150,10 @@ export function ProductDetailPage() {
         </div>
       )}
 
-      <h2 className="mt-8 text-sm font-semibold text-slate-500 dark:text-slate-400">
-        Histórico de movimentações
-      </h2>
-      <div className="mt-2 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+      <h2 className="mt-8 text-sm font-semibold text-ink-500">Histórico de movimentações</h2>
+      <div className="table-card mt-2">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+          <thead className="table-head">
             <tr>
               <th className="px-4 py-2 font-medium">Data</th>
               <th className="px-4 py-2 font-medium">Tipo</th>
@@ -164,13 +166,13 @@ export function ProductDetailPage() {
           <tbody>
             {movements?.items.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={6} className="px-4 py-6 text-center text-ink-500">
                   Nenhuma movimentação registrada.
                 </td>
               </tr>
             )}
             {movements?.items.map((m) => (
-              <tr key={m.id} className="border-t border-slate-100 dark:border-slate-800">
+              <tr key={m.id} className="border-t border-white/[0.05] text-white">
                 <td className="px-4 py-2">{formatDateTime(m.created_at)}</td>
                 <td className="px-4 py-2">{MOVEMENT_LABELS[m.type]}</td>
                 <td className="px-4 py-2">{m.quantity_before}</td>
@@ -178,7 +180,7 @@ export function ProductDetailPage() {
                   {m.quantity_change > 0 ? `+${m.quantity_change}` : m.quantity_change}
                 </td>
                 <td className="px-4 py-2">{m.quantity_after}</td>
-                <td className="px-4 py-2 text-slate-500 dark:text-slate-400">{m.reason}</td>
+                <td className="px-4 py-2 text-ink-500">{m.reason}</td>
               </tr>
             ))}
           </tbody>

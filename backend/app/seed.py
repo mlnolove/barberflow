@@ -5,16 +5,26 @@ Idempotente: pode ser executado múltiplas vezes sem duplicar dados.
 """
 
 import logging
+from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 
 from sqlalchemy.orm import Session
 
 from app.core.permissions import ALL_PERMISSIONS, DEFAULT_ROLE_PERMISSIONS, ROLE_DEFINITIONS
 from app.core.security import hash_password
 from app.db.session import SessionLocal
+from app.models.client_account import ClientAccount
 from app.models.permission import Permission, RolePermission
 from app.models.role import Role
+from app.models.subscription import (
+    BillingInterval,
+    Subscription,
+    SubscriptionPlan,
+    SubscriptionStatus,
+)
 from app.models.tenant import Tenant
 from app.models.user import User
+from app.repositories.subscription_repository import SubscriptionRepository
 from app.services.payment_method_service import seed_default_payment_methods
 from app.services.scheduling_settings_service import seed_default_business_hours
 
@@ -63,9 +73,14 @@ def _seed_demo_tenant(db: Session, roles: dict[str, Role]) -> None:
         tenant = Tenant(
             name="Elite Barber",
             slug="elite-barber",
+            description="Barbearia de demonstração — cortes, barba e sobrancelha.",
             phone="(11) 99999-0000",
             email="contato@elitebarber.com",
             city="São Paulo",
+            # Praça da Sé, centro de São Paulo — só para o smoke test de
+            # busca por proximidade ter algo real para encontrar.
+            latitude=-23.550520,
+            longitude=-46.633308,
             onboarding_completed=True,
         )
         db.add(tenant)
@@ -91,6 +106,21 @@ def _seed_demo_tenant(db: Session, roles: dict[str, Role]) -> None:
     db.flush()
 
 
+def _seed_demo_client(db: Session) -> None:
+    email = "cliente@exemplo.com"
+    if db.query(ClientAccount).filter(ClientAccount.email == email).one_or_none() is not None:
+        return
+    db.add(
+        ClientAccount(
+            full_name="Cliente Demo",
+            email=email,
+            hashed_password=hash_password(DEMO_PASSWORD),
+            phone="(11) 98888-0000",
+        )
+    )
+    db.flush()
+
+
 def _seed_business_hours_for_all_tenants(db: Session) -> None:
     for tenant in db.query(Tenant).all():
         seed_default_business_hours(db, tenant.id)
@@ -101,14 +131,58 @@ def _seed_payment_methods_for_all_tenants(db: Session) -> None:
         seed_default_payment_methods(db, tenant.id)
 
 
+def _seed_subscription_plans(db: Session) -> None:
+    plans = [
+        ("monthly", "Mensal", BillingInterval.MONTHLY, Decimal("49.90"), 14),
+        ("annual", "Anual", BillingInterval.ANNUAL, Decimal("499.00"), 14),
+    ]
+    for code, name, interval, price, trial_days in plans:
+        if db.query(SubscriptionPlan).filter(SubscriptionPlan.code == code).one_or_none():
+            continue
+        db.add(
+            SubscriptionPlan(
+                code=code, name=name, billing_interval=interval, price=price, trial_days=trial_days
+            )
+        )
+    db.flush()
+
+
+def _seed_subscriptions_for_all_tenants(db: Session) -> None:
+    """Backfill: tenants criados fora do fluxo normal de signup (o tenant de
+    demonstração deste seed, ou qualquer tenant que já existia antes desta
+    fase) não passam por `provision_trial_subscription`. Para não deixá-los
+    sem assinatura — o que bloquearia o acesso no dia em que o gate de
+    assinatura for ligado — todo tenant sem assinatura recebe uma ACTIVE
+    de validade longa aqui, e não um TRIAL (eles já usam o sistema há
+    tempo, não estão "experimentando")."""
+    monthly = db.query(SubscriptionPlan).filter(SubscriptionPlan.code == "monthly").one()
+    now = datetime.now(UTC)
+    for tenant in db.query(Tenant).all():
+        if SubscriptionRepository(db, tenant.id).get_current() is not None:
+            continue
+        db.add(
+            Subscription(
+                tenant_id=tenant.id,
+                plan_id=monthly.id,
+                status=SubscriptionStatus.ACTIVE,
+                current_period_start=now,
+                current_period_end=now + timedelta(days=3650),
+            )
+        )
+    db.flush()
+
+
 def run_seed() -> None:
     db = SessionLocal()
     try:
         permissions = _seed_permissions(db)
         roles = _seed_roles(db, permissions)
         _seed_demo_tenant(db, roles)
+        _seed_demo_client(db)
         _seed_business_hours_for_all_tenants(db)
         _seed_payment_methods_for_all_tenants(db)
+        _seed_subscription_plans(db)
+        _seed_subscriptions_for_all_tenants(db)
         db.commit()
         logger.info("Seed concluído com sucesso.")
     except Exception:

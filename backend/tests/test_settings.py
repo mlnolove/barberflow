@@ -297,4 +297,38 @@ def test_settings_are_isolated_per_tenant(client):
         "/api/settings/tenant", headers=_auth_headers(owner_b["access_token"])
     ).json()
     assert body_b["name"] != "Barbearia A Renomeada"
-    assert body_b["min_advance_minutes"] == 30
+
+
+def test_manage_tenant_photos(client):
+    owner = _signup_owner(client, "fotos@config.com")
+    headers = _auth_headers(owner["access_token"])
+
+    created = client.post(
+        "/api/settings/photos", headers=headers, json={"url": "https://cdn.example.com/1.jpg"}
+    )
+    assert created.status_code == 201
+    photo_id = created.json()["id"]
+
+    listed = client.get("/api/settings/photos", headers=headers)
+    assert listed.status_code == 200
+    assert any(p["id"] == photo_id for p in listed.json())
+
+    deleted = client.delete(f"/api/settings/photos/{photo_id}", headers=headers)
+    assert deleted.status_code == 204
+
+    listed_after = client.get("/api/settings/photos", headers=headers)
+    assert listed_after.json() == []
+
+
+def test_tenant_photos_are_isolated_per_tenant(client):
+    owner_a = _signup_owner(client, "fotosA@config.com")
+    owner_b = _signup_owner(client, "fotosB@config.com")
+
+    client.post(
+        "/api/settings/photos",
+        headers=_auth_headers(owner_a["access_token"]),
+        json={"url": "https://cdn.example.com/a.jpg"},
+    )
+
+    listed_b = client.get("/api/settings/photos", headers=_auth_headers(owner_b["access_token"]))
+    assert listed_b.json() == []

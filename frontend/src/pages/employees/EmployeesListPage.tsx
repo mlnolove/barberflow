@@ -52,12 +52,9 @@ export function EmployeesListPage() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Profissionais</h1>
+        <h1 className="font-serif text-xl font-semibold text-white">Profissionais</h1>
         {hasPermission("employees.create") && (
-          <button
-            onClick={openCreate}
-            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-          >
+          <button onClick={openCreate} className="btn-primary">
             Novo profissional
           </button>
         )}
@@ -71,7 +68,7 @@ export function EmployeesListPage() {
             setPage(1);
           }}
           placeholder="Buscar por nome, telefone ou e-mail"
-          className="w-72 rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="w-72 rounded-md border border-white/[0.08] bg-ink-900 px-3 py-2 text-sm text-white placeholder:text-ink-600"
         />
         <select
           value={status}
@@ -79,7 +76,7 @@ export function EmployeesListPage() {
             setStatus(e.target.value as StatusFilter);
             setPage(1);
           }}
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="rounded-md border border-white/[0.08] bg-ink-900 px-3 py-2 text-sm text-white"
         >
           <option value="active">Ativos</option>
           <option value="inactive">Inativos</option>
@@ -88,46 +85,31 @@ export function EmployeesListPage() {
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {isLoading && <p className="text-slate-500">Carregando...</p>}
-        {isError && <p className="text-red-600">Não foi possível carregar os profissionais.</p>}
+        {isLoading && <p className="text-ink-500">Carregando...</p>}
+        {isError && <p className="text-red-400">Não foi possível carregar os profissionais.</p>}
         {data && data.items.length === 0 && (
-          <p className="text-slate-500">Nenhum profissional encontrado.</p>
+          <p className="text-ink-500">Nenhum profissional encontrado.</p>
         )}
         {data?.items.map((employee) => (
-          <div
-            key={employee.id}
-            className="rounded-xl border border-slate-200 p-4 dark:border-slate-800"
-          >
+          <div key={employee.id} className="rounded-xl border border-white/[0.06] bg-ink-900 p-4">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="font-medium">{employee.full_name}</h3>
-                {employee.role_title && (
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {employee.role_title}
-                  </p>
-                )}
+                <h3 className="font-medium text-white">{employee.full_name}</h3>
+                {employee.role_title && <p className="text-xs text-ink-500">{employee.role_title}</p>}
               </div>
-              <span
-                className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                  employee.is_active
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
-                    : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
-                }`}
-              >
+              <span className={employee.is_active ? "badge-active" : "badge-inactive"}>
                 {employee.is_active ? "Ativo" : "Inativo"}
               </span>
             </div>
 
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{employee.phone}</p>
+            <p className="mt-2 text-sm text-ink-300">{employee.phone}</p>
 
             {employee.specialties.length > 0 && (
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                {employee.specialties.join(" · ")}
-              </p>
+              <p className="mt-1 text-xs text-ink-500">{employee.specialties.join(" · ")}</p>
             )}
 
             {employee.work_days.length > 0 && (
-              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+              <p className="mt-2 text-xs text-ink-500">
                 {employee.work_days.map((d) => WEEKDAY_LABELS[d]).join(", ")}
                 {employee.work_start_time &&
                   employee.work_end_time &&
@@ -138,10 +120,7 @@ export function EmployeesListPage() {
             {employee.services.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
                 {employee.services.map((s) => (
-                  <span
-                    key={s.id}
-                    className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-300"
-                  >
+                  <span key={s.id} className="rounded-full bg-ink-800 px-2 py-0.5 text-xs text-ink-300">
                     {s.name}
                   </span>
                 ))}
@@ -150,17 +129,11 @@ export function EmployeesListPage() {
 
             {hasPermission("employees.edit") && (
               <div className="mt-4 flex gap-2">
-                <button
-                  onClick={() => openEdit(employee)}
-                  className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-                >
+                <button onClick={() => openEdit(employee)} className="btn-secondary">
                   Editar
                 </button>
                 {hasPermission("employees.delete") && (
-                  <button
-                    onClick={() => toggleStatusMutation.mutate(employee)}
-                    className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-                  >
+                  <button onClick={() => toggleStatusMutation.mutate(employee)} className="btn-secondary">
                     {employee.is_active ? "Desativar" : "Reativar"}
                   </button>
                 )}
@@ -171,7 +144,7 @@ export function EmployeesListPage() {
       </div>
 
       {data && data.total > 0 && (
-        <div className="mt-4 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+        <div className="mt-4 flex items-center justify-between text-sm text-ink-500">
           <span>
             {data.total} profissiona{data.total !== 1 ? "is" : "l"} — página {page} de {totalPages}
           </span>
@@ -179,14 +152,14 @@ export function EmployeesListPage() {
             <button
               disabled={page <= 1}
               onClick={() => setPage((p) => p - 1)}
-              className="rounded-md border border-slate-300 px-3 py-1 disabled:opacity-40 dark:border-slate-700"
+              className="rounded-md border border-white/[0.08] px-3 py-1 text-ink-300 disabled:opacity-40"
             >
               Anterior
             </button>
             <button
               disabled={page >= totalPages}
               onClick={() => setPage((p) => p + 1)}
-              className="rounded-md border border-slate-300 px-3 py-1 disabled:opacity-40 dark:border-slate-700"
+              className="rounded-md border border-white/[0.08] px-3 py-1 text-ink-300 disabled:opacity-40"
             >
               Próxima
             </button>

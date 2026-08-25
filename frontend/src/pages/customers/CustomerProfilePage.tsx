@@ -32,46 +32,37 @@ export function CustomerProfilePage() {
   });
 
   if (isLoading) {
-    return <div className="p-6 text-slate-500">Carregando...</div>;
+    return <div className="p-6 text-ink-500">Carregando...</div>;
   }
 
   if (!customer) {
-    return <div className="p-6 text-slate-500">Cliente não encontrado.</div>;
+    return <div className="p-6 text-ink-500">Cliente não encontrado.</div>;
   }
 
   return (
     <div className="p-6">
-      <Link to="/clientes" className="text-sm text-brand-secondary hover:underline">
+      <Link to="/clientes" className="text-sm text-gold hover:underline">
         ← Voltar para clientes
       </Link>
 
       <div className="mt-3 flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold">{customer.full_name}</h1>
-          <span
-            className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
-              customer.is_active
-                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
-                : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
-            }`}
-          >
+          <h1 className="font-serif text-xl font-semibold text-white">{customer.full_name}</h1>
+          <span className={`mt-1 inline-block ${customer.is_active ? "badge-active" : "badge-inactive"}`}>
             {customer.is_active ? "Ativo" : "Inativo"}
           </span>
         </div>
 
         {hasPermission("clients.edit") && (
           <div className="flex gap-2">
-            <button
-              onClick={() => setShowEditModal(true)}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-            >
+            <button onClick={() => setShowEditModal(true)} className="btn-secondary">
               Editar
             </button>
             {hasPermission("clients.delete") && (
               <button
                 onClick={() => toggleStatusMutation.mutate()}
                 disabled={toggleStatusMutation.isPending}
-                className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:hover:bg-slate-800"
+                className="btn-secondary"
               >
                 {customer.is_active ? "Desativar" : "Reativar"}
               </button>
@@ -81,35 +72,33 @@ export function CustomerProfilePage() {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Telefone</p>
-          <p className="mt-1 text-sm">{customer.phone}</p>
+        <div className="rounded-xl border border-white/[0.06] bg-ink-900 p-4">
+          <p className="text-xs font-medium text-ink-500">Telefone</p>
+          <p className="mt-1 text-sm text-white">{customer.phone}</p>
         </div>
-        <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">E-mail</p>
-          <p className="mt-1 text-sm">{customer.email ?? "—"}</p>
+        <div className="rounded-xl border border-white/[0.06] bg-ink-900 p-4">
+          <p className="text-xs font-medium text-ink-500">E-mail</p>
+          <p className="mt-1 text-sm text-white">{customer.email ?? "—"}</p>
         </div>
-        <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-            Data de nascimento
-          </p>
-          <p className="mt-1 text-sm">{formatDate(customer.birth_date)}</p>
+        <div className="rounded-xl border border-white/[0.06] bg-ink-900 p-4">
+          <p className="text-xs font-medium text-ink-500">Data de nascimento</p>
+          <p className="mt-1 text-sm text-white">{formatDate(customer.birth_date)}</p>
         </div>
-        <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Cliente desde</p>
-          <p className="mt-1 text-sm">{formatDate(customer.created_at)}</p>
+        <div className="rounded-xl border border-white/[0.06] bg-ink-900 p-4">
+          <p className="text-xs font-medium text-ink-500">Cliente desde</p>
+          <p className="mt-1 text-sm text-white">{formatDate(customer.created_at)}</p>
         </div>
-        <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800 sm:col-span-2">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Endereço</p>
-          <p className="mt-1 text-sm">{customer.address ?? "—"}</p>
+        <div className="rounded-xl border border-white/[0.06] bg-ink-900 p-4 sm:col-span-2">
+          <p className="text-xs font-medium text-ink-500">Endereço</p>
+          <p className="mt-1 text-sm text-white">{customer.address ?? "—"}</p>
         </div>
-        <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800 sm:col-span-2">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Observações</p>
-          <p className="mt-1 whitespace-pre-wrap text-sm">{customer.notes ?? "—"}</p>
+        <div className="rounded-xl border border-white/[0.06] bg-ink-900 p-4 sm:col-span-2">
+          <p className="text-xs font-medium text-ink-500">Observações</p>
+          <p className="mt-1 whitespace-pre-wrap text-sm text-white">{customer.notes ?? "—"}</p>
         </div>
       </div>
 
-      <div className="mt-6 rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+      <div className="mt-6 rounded-xl border border-dashed border-white/[0.1] p-8 text-center text-sm text-ink-500">
         Histórico de atendimentos, valor total gasto e serviço mais utilizado estarão disponíveis
         a partir da Fase 4 (Agenda) e Fase 6 (Financeiro) do roadmap.
       </div>

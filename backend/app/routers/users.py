@@ -13,7 +13,7 @@ from app.models.user import User
 from app.repositories.role_repository import RoleRepository
 from app.repositories.user_repository import UserRepository, find_user_by_email_global
 from app.schemas.user import UserCreate, UserPermissionOverrideUpdate, UserRead, UserUpdate
-from app.services import permission_service
+from app.services import audit_service, permission_service
 from app.services.permission_service import get_effective_permissions
 
 router = APIRouter(prefix="/api/users", tags=["users"])
@@ -108,5 +108,14 @@ def update_user_permission(
         raise NotFoundError("Permissão informada não existe.")
 
     permission_service.set_user_permission_override(db, user.id, permission.id, payload.granted)
+    audit_service.log_user_action(
+        db,
+        tenant_id=current_user.tenant_id,
+        user_id=current_user.user.id,
+        action="user_permission.override",
+        resource_type="user",
+        resource_id=user.id,
+        metadata={"permission_code": payload.permission_code, "granted": payload.granted},
+    )
     db.commit()
     return _to_user_read(db, user)

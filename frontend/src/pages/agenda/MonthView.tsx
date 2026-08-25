@@ -38,7 +38,7 @@ export function MonthView({ date, appointments, onSelectDay }: MonthViewProps) {
 
   return (
     <div>
-      <div className="grid grid-cols-7 gap-2 text-center text-xs font-medium text-slate-500 dark:text-slate-400">
+      <div className="grid grid-cols-7 gap-2 text-center text-xs font-medium text-ink-500">
         {WEEKDAY_LABELS.map((label) => (
           <div key={label}>{label}</div>
         ))}
@@ -52,15 +52,13 @@ export function MonthView({ date, appointments, onSelectDay }: MonthViewProps) {
             <button
               key={dayStr}
               onClick={() => onSelectDay(dayStr)}
-              className={`flex h-20 flex-col items-center justify-start rounded-lg border p-2 text-sm ${
-                inMonth
-                  ? "border-slate-200 dark:border-slate-800"
-                  : "border-transparent text-slate-300 dark:text-slate-700"
-              } hover:border-brand-secondary`}
+              className={`flex h-20 flex-col items-center justify-start rounded-lg border p-2 text-sm text-white hover:border-gold/50 ${
+                inMonth ? "border-white/[0.06]" : "border-transparent text-ink-700"
+              }`}
             >
               <span>{day.getDate()}</span>
               {count > 0 && (
-                <span className="mt-1 rounded-full bg-brand px-2 py-0.5 text-xs text-white">
+                <span className="mt-1 rounded-full bg-gold px-2 py-0.5 text-xs text-ink-950">
                   {count}
                 </span>
               )}

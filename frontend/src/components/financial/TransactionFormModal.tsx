@@ -80,8 +80,8 @@ export function TransactionFormModal({ defaultType = "INCOME", onClose }: Transa
     <Modal title="Novo lançamento" onClose={onClose}>
       <form className="space-y-4" onSubmit={handleSubmit((v) => mutation.mutate(v))} noValidate>
         <div>
-          <span className="block text-sm font-medium">Tipo</span>
-          <div className="mt-1 flex rounded-md border border-slate-300 text-sm dark:border-slate-700">
+          <span className="field-label">Tipo</span>
+          <div className="mt-1 flex rounded-md border border-white/[0.08] text-sm text-ink-300">
             <label className="flex-1">
               <input type="radio" value="INCOME" className="peer sr-only" {...register("type")} />
               <span className="block cursor-pointer rounded-l-md px-3 py-2 text-center peer-checked:bg-emerald-600 peer-checked:text-white">
@@ -98,13 +98,13 @@ export function TransactionFormModal({ defaultType = "INCOME", onClose }: Transa
         </div>
 
         <div>
-          <label htmlFor="category" className="block text-sm font-medium">
+          <label htmlFor="category" className="field-label">
             Categoria
           </label>
           <input
             id="category"
             list="category-options"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             {...register("category")}
           />
           <datalist id="category-options">
@@ -113,58 +113,58 @@ export function TransactionFormModal({ defaultType = "INCOME", onClose }: Transa
             ))}
           </datalist>
           {errors.category && (
-            <p className="mt-1 text-xs text-red-600">{errors.category.message}</p>
+            <p className="field-error">{errors.category.message}</p>
           )}
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium">
+          <label htmlFor="description" className="field-label">
             Descrição
           </label>
           <input
             id="description"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             {...register("description")}
           />
           {errors.description && (
-            <p className="mt-1 text-xs text-red-600">{errors.description.message}</p>
+            <p className="field-error">{errors.description.message}</p>
           )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="amount" className="block text-sm font-medium">
+            <label htmlFor="amount" className="field-label">
               Valor (R$)
             </label>
             <input
               id="amount"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="field-input"
               {...register("amount")}
             />
             {errors.amount && (
-              <p className="mt-1 text-xs text-red-600">{errors.amount.message}</p>
+              <p className="field-error">{errors.amount.message}</p>
             )}
           </div>
           <div>
-            <label htmlFor="transaction_date" className="block text-sm font-medium">
+            <label htmlFor="transaction_date" className="field-label">
               Data
             </label>
             <input
               id="transaction_date"
               type="date"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="field-input"
               {...register("transaction_date")}
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="payment_method_id" className="block text-sm font-medium">
+          <label htmlFor="payment_method_id" className="field-label">
             Forma de pagamento
           </label>
           <select
             id="payment_method_id"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             {...register("payment_method_id")}
           >
             <option value="">Selecione...</option>
@@ -175,37 +175,29 @@ export function TransactionFormModal({ defaultType = "INCOME", onClose }: Transa
             ))}
           </select>
           {errors.payment_method_id && (
-            <p className="mt-1 text-xs text-red-600">{errors.payment_method_id.message}</p>
+            <p className="field-error">{errors.payment_method_id.message}</p>
           )}
         </div>
 
         <div>
-          <label htmlFor="notes" className="block text-sm font-medium">
+          <label htmlFor="notes" className="field-label">
             Observações (opcional)
           </label>
           <textarea
             id="notes"
             rows={2}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             {...register("notes")}
           />
         </div>
 
-        {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+        {serverError && <p className="text-sm text-red-400">{serverError}</p>}
 
         <div className="flex justify-end gap-2 pt-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-          >
+          <button type="button" onClick={onClose} className="btn-secondary">
             Cancelar
           </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
-          >
+          <button type="submit" disabled={isSubmitting} className="btn-primary">
             {isSubmitting ? "Salvando..." : "Salvar"}
           </button>
         </div>

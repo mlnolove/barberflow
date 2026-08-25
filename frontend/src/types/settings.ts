@@ -30,14 +30,20 @@ export interface BlockedDateCreatePayload {
 export interface TenantUpdatePayload {
   name?: string;
   logo_url?: string | null;
+  description?: string | null;
   phone?: string | null;
   email?: string | null;
   address?: string | null;
   city?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   primary_color?: string;
   secondary_color?: string;
   appointment_buffer_minutes?: number;
   min_advance_minutes?: number;
   max_advance_days?: number;
   allow_cancellation?: boolean;
+  scheduling_mode?: "TIME_SLOT" | "QUEUE";
+  auto_approve_appointments?: boolean;
+  cancellation_deadline_minutes?: number | null;
 }

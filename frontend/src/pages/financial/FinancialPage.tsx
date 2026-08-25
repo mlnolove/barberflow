@@ -69,41 +69,38 @@ export function FinancialPage() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Financeiro</h1>
+        <h1 className="font-serif text-xl font-semibold text-white">Financeiro</h1>
         {hasPermission("finance.create") && (
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-          >
+          <button onClick={() => setShowCreateModal(true)} className="btn-primary">
             Novo lançamento
           </button>
         )}
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Entradas</p>
-          <p className="mt-1 text-2xl font-semibold text-emerald-600 dark:text-emerald-400">
+        <div className="rounded-xl border border-white/[0.06] bg-ink-900 p-4">
+          <p className="text-xs font-medium text-ink-500">Entradas</p>
+          <p className="mt-1 font-mono text-2xl font-semibold text-emerald-400">
             {summary ? formatMoney(summary.total_income) : "—"}
           </p>
         </div>
-        <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Saídas</p>
-          <p className="mt-1 text-2xl font-semibold text-red-600 dark:text-red-400">
+        <div className="rounded-xl border border-white/[0.06] bg-ink-900 p-4">
+          <p className="text-xs font-medium text-ink-500">Saídas</p>
+          <p className="mt-1 font-mono text-2xl font-semibold text-red-400">
             {summary ? formatMoney(summary.total_expense) : "—"}
           </p>
         </div>
-        <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Saldo do período</p>
-          <p className="mt-1 text-2xl font-semibold">{summary ? formatMoney(summary.balance) : "—"}</p>
+        <div className="rounded-xl border border-white/[0.06] bg-ink-900 p-4">
+          <p className="text-xs font-medium text-ink-500">Saldo do período</p>
+          <p className="mt-1 font-mono text-2xl font-semibold text-white">
+            {summary ? formatMoney(summary.balance) : "—"}
+          </p>
         </div>
       </div>
 
       {paymentMethods && paymentMethods.length > 0 && (
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-            Formas de pagamento:
-          </span>
+          <span className="text-xs font-medium text-ink-500">Formas de pagamento:</span>
           {paymentMethods.map((m) => (
             <button
               key={m.id}
@@ -111,8 +108,8 @@ export function FinancialPage() {
               onClick={() => toggleMethodMutation.mutate({ id: m.id, isActive: !m.is_active })}
               className={`rounded-full border px-3 py-1 text-xs font-medium ${
                 m.is_active
-                  ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
-                  : "border-slate-300 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800"
+                  ? "border-emerald-800/40 bg-emerald-950/30 text-emerald-300"
+                  : "border-white/[0.08] bg-ink-900 text-ink-600"
               }`}
             >
               {m.name} {m.is_active ? "✓" : "desativado"}
@@ -129,9 +126,9 @@ export function FinancialPage() {
             setDateFrom(e.target.value);
             setPage(1);
           }}
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="rounded-md border border-white/[0.08] bg-ink-900 px-3 py-2 text-sm text-white"
         />
-        <span className="text-sm text-slate-400">até</span>
+        <span className="text-sm text-ink-600">até</span>
         <input
           type="date"
           value={dateTo}
@@ -139,7 +136,7 @@ export function FinancialPage() {
             setDateTo(e.target.value);
             setPage(1);
           }}
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="rounded-md border border-white/[0.08] bg-ink-900 px-3 py-2 text-sm text-white"
         />
         <select
           value={type}
@@ -147,7 +144,7 @@ export function FinancialPage() {
             setType(e.target.value as TransactionType | "");
             setPage(1);
           }}
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="rounded-md border border-white/[0.08] bg-ink-900 px-3 py-2 text-sm text-white"
         >
           <option value="">Todos os tipos</option>
           <option value="INCOME">Entradas</option>
@@ -155,9 +152,9 @@ export function FinancialPage() {
         </select>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+      <div className="table-card mt-4">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+          <thead className="table-head">
             <tr>
               <th className="px-4 py-3 font-medium">Data</th>
               <th className="px-4 py-3 font-medium">Descrição</th>
@@ -170,37 +167,37 @@ export function FinancialPage() {
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={6} className="px-4 py-6 text-center text-ink-500">
                   Carregando...
                 </td>
               </tr>
             )}
             {isError && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-red-600">
+                <td colSpan={6} className="px-4 py-6 text-center text-red-400">
                   Não foi possível carregar os lançamentos.
                 </td>
               </tr>
             )}
             {transactions && transactions.items.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={6} className="px-4 py-6 text-center text-ink-500">
                   Nenhum lançamento no período.
                 </td>
               </tr>
             )}
             {transactions?.items.map((t) => (
-              <tr key={t.id} className="border-t border-slate-100 dark:border-slate-800">
+              <tr key={t.id} className="border-t border-white/[0.05] text-white">
                 <td className="px-4 py-3">{formatDate(t.transaction_date)}</td>
                 <td className="px-4 py-3">
                   {t.description}
                   {t.is_voided && (
-                    <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                    <span className="ml-2 rounded-full bg-ink-800 px-2 py-0.5 text-xs text-ink-400">
                       Estornado
                     </span>
                   )}
                   {t.reversal_of_id && (
-                    <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                    <span className="ml-2 rounded-full bg-amber-950/40 px-2 py-0.5 text-xs text-amber-300">
                       Estorno
                     </span>
                   )}
@@ -208,10 +205,8 @@ export function FinancialPage() {
                 <td className="px-4 py-3">{t.category}</td>
                 <td className="px-4 py-3">{t.payment_method.name}</td>
                 <td
-                  className={`px-4 py-3 font-medium ${
-                    t.type === "INCOME"
-                      ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-red-600 dark:text-red-400"
+                  className={`px-4 py-3 font-mono font-medium ${
+                    t.type === "INCOME" ? "text-emerald-400" : "text-red-400"
                   }`}
                 >
                   {t.type === "INCOME" ? "+" : "−"} {formatMoney(t.amount)}
@@ -220,7 +215,7 @@ export function FinancialPage() {
                   {hasPermission("finance.edit") && !t.is_voided && !t.reversal_of_id && (
                     <button
                       onClick={() => setVoidingTransaction(t)}
-                      className="rounded-md border border-slate-300 px-2.5 py-1 text-xs hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                      className="rounded-md border border-white/[0.08] px-2.5 py-1 text-xs text-ink-300 hover:bg-ink-800"
                     >
                       Estornar
                     </button>
@@ -233,7 +228,7 @@ export function FinancialPage() {
       </div>
 
       {transactions && transactions.total > 0 && (
-        <div className="mt-4 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+        <div className="mt-4 flex items-center justify-between text-sm text-ink-500">
           <span>
             {transactions.total} lançamento{transactions.total !== 1 ? "s" : ""} — página {page} de{" "}
             {totalPages}
@@ -242,14 +237,14 @@ export function FinancialPage() {
             <button
               disabled={page <= 1}
               onClick={() => setPage((p) => p - 1)}
-              className="rounded-md border border-slate-300 px-3 py-1 disabled:opacity-40 dark:border-slate-700"
+              className="rounded-md border border-white/[0.08] px-3 py-1 text-ink-300 disabled:opacity-40"
             >
               Anterior
             </button>
             <button
               disabled={page >= totalPages}
               onClick={() => setPage((p) => p + 1)}
-              className="rounded-md border border-slate-300 px-3 py-1 disabled:opacity-40 dark:border-slate-700"
+              className="rounded-md border border-white/[0.08] px-3 py-1 text-ink-300 disabled:opacity-40"
             >
               Próxima
             </button>

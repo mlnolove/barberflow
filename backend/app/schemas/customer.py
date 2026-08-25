@@ -42,7 +42,7 @@ class CustomerRead(BaseModel):
 
     id: uuid.UUID
     full_name: str
-    phone: str
+    phone: str | None
     email: str | None
     birth_date: date | None
     address: str | None
@@ -56,4 +56,4 @@ class CustomerSummary(BaseModel):
 
     id: uuid.UUID
     full_name: str
-    phone: str
+    phone: str | None

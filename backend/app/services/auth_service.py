@@ -27,6 +27,7 @@ from app.repositories.user_repository import UserRepository, find_user_by_email_
 from app.schemas.auth import LoginRequest, TenantSignupRequest
 from app.services.payment_method_service import seed_default_payment_methods
 from app.services.scheduling_settings_service import seed_default_business_hours
+from app.services.subscription_service import provision_trial_subscription
 
 
 def _slugify(value: str) -> str:
@@ -67,6 +68,7 @@ def signup_tenant(db: Session, payload: TenantSignupRequest) -> AuthResult:
     tenant = tenant_repo.add(Tenant(name=payload.tenant_name, slug=slug))
     seed_default_business_hours(db, tenant.id)
     seed_default_payment_methods(db, tenant.id)
+    provision_trial_subscription(db, tenant.id)
 
     owner_role = role_repo.get_by_code("OWNER")
     if owner_role is None:

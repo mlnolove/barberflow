@@ -34,3 +34,11 @@ class NotFoundError(DomainError):
 class ConflictError(DomainError):
     def __init__(self, message: str):
         super().__init__(message)
+
+
+class SubscriptionRequiredError(DomainError):
+    def __init__(self):
+        super().__init__(
+            "A assinatura desta barbearia está inativa ou expirada. "
+            "Regularize o pagamento em Configurações para continuar."
+        )

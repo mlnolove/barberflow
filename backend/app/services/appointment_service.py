@@ -8,6 +8,7 @@ from app.core.exceptions import ConflictError, DomainError, NotFoundError
 from app.models.appointment import Appointment, AppointmentStatus, AppointmentStatusHistory
 from app.models.employee import Employee
 from app.models.financial_transaction import FinancialTransactionType
+from app.models.notification import NotificationType
 from app.repositories.appointment_repository import AppointmentRepository
 from app.repositories.blocked_date_repository import BlockedDateRepository
 from app.repositories.business_hours_repository import BusinessHoursRepository
@@ -19,7 +20,33 @@ from app.repositories.tenant_repository import TenantRepository
 from app.schemas.appointment import AppointmentComplete, AppointmentCreate, AppointmentReschedule
 from app.schemas.financial_transaction import FinancialTransactionCreate
 from app.schemas.inventory_movement import ManualMovementType, StockMovementCreate
-from app.services import financial_service, inventory_service
+from app.services import financial_service, inventory_service, notification_service
+
+
+def _notify_client_if_linked(
+    db,
+    tenant_id: uuid.UUID,
+    appointment: Appointment,
+    type_: NotificationType,
+    title: str,
+    body: str,
+) -> None:
+    """Só existe destinatário quando o `Customer` do agendamento está
+    vinculado a um `ClientAccount` (ver seção 1 da Fase 1 do marketplace) —
+    um walk-in cadastrado manualmente pela equipe não tem app instalado."""
+    client_account_id = appointment.customer.client_account_id
+    if client_account_id is None:
+        return
+    notification_service.notify_client(
+        db,
+        tenant_id=tenant_id,
+        client_account_id=client_account_id,
+        type_=type_,
+        title=title,
+        body=body,
+        metadata={"appointment_id": str(appointment.id)},
+    )
+
 
 _ALLOWED_TRANSITIONS: dict[AppointmentStatus, set[AppointmentStatus]] = {
     AppointmentStatus.PENDING: {
@@ -113,6 +140,35 @@ def _validate_schedule(
         raise ConflictError("Já existe um agendamento para este profissional nesse horário.")
 
     return ends_at
+
+
+def validate_schedule(
+    db: Session,
+    tenant_id: uuid.UUID,
+    *,
+    employee: Employee,
+    service_id: uuid.UUID,
+    starts_at: datetime,
+    duration_minutes: int,
+    exclude_appointment_id: uuid.UUID | None = None,
+) -> datetime:
+    """Wrapper público de `_validate_schedule` — ponto único de reuso das
+    regras de conflito de horário (funcionamento, jornada do profissional,
+    bloqueios, antecedência, conflito de agenda) por outros domínios, como
+    `availability_service` e `client_appointment_service`, sem duplicá-las."""
+    return _validate_schedule(
+        db,
+        tenant_id,
+        employee=employee,
+        service_id=service_id,
+        starts_at=starts_at,
+        duration_minutes=duration_minutes,
+        exclude_appointment_id=exclude_appointment_id,
+    )
+
+
+def employee_offers_service(employee: Employee, service_id: uuid.UUID) -> bool:
+    return _employee_offers_service(employee, service_id)
 
 
 def list_appointments(
@@ -263,7 +319,17 @@ def _apply_transition(
 def confirm_appointment(
     db: Session, tenant_id: uuid.UUID, appointment_id: uuid.UUID, user_id: uuid.UUID
 ) -> Appointment:
-    _apply_transition(db, tenant_id, appointment_id, user_id, AppointmentStatus.CONFIRMED)
+    appointment = _apply_transition(
+        db, tenant_id, appointment_id, user_id, AppointmentStatus.CONFIRMED
+    )
+    _notify_client_if_linked(
+        db,
+        tenant_id,
+        appointment,
+        NotificationType.APPOINTMENT_CONFIRMED,
+        "Agendamento confirmado",
+        f"Seu horário de {appointment.service.name} foi confirmado.",
+    )
     db.commit()
     return get_appointment(db, tenant_id, appointment_id)
 
@@ -366,6 +432,14 @@ def cancel_appointment(
     db.flush()
     _apply_transition(
         db, tenant_id, appointment_id, user_id, AppointmentStatus.CANCELLED, reason=reason
+    )
+    _notify_client_if_linked(
+        db,
+        tenant_id,
+        appointment,
+        NotificationType.APPOINTMENT_CANCELLED,
+        "Agendamento cancelado",
+        f"A barbearia cancelou seu horário de {appointment.service.name}. Motivo: {reason}",
     )
     db.commit()
     return get_appointment(db, tenant_id, appointment_id)

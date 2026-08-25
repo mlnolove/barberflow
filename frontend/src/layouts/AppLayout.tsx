@@ -1,25 +1,78 @@
 import { useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Bell,
+  CalendarDays,
+  Clock,
+  LayoutGrid,
+  LogOut,
+  Menu,
+  MessageCircle,
+  Package,
+  Scissors,
+  Settings,
+  ShieldCheck,
+  Users,
+  Wallet,
+} from "lucide-react";
 
 import { logout } from "@/api/auth";
+import { listNotifications } from "@/api/notifications";
 import { useAuthStore } from "@/store/authStore";
+import type { SchedulingMode } from "@/types/auth";
 
 interface NavItem {
   to: string;
   label: string;
+  icon: typeof LayoutGrid;
   permission?: string;
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { to: "/dashboard", label: "Dashboard" },
-  { to: "/agenda", label: "Agenda", permission: "appointments.view" },
-  { to: "/clientes", label: "Clientes", permission: "clients.view" },
-  { to: "/servicos", label: "Serviços", permission: "services.view" },
-  { to: "/profissionais", label: "Profissionais", permission: "employees.view" },
-  { to: "/estoque", label: "Estoque", permission: "inventory.view" },
-  { to: "/financeiro", label: "Financeiro", permission: "finance.view" },
-  { to: "/configuracoes", label: "Configurações", permission: "settings.view" },
-];
+function buildNavItems(schedulingMode: SchedulingMode | undefined): NavItem[] {
+  const scheduleItem: NavItem =
+    schedulingMode === "QUEUE"
+      ? { to: "/fila", label: "Fila", icon: Clock, permission: "appointments.view" }
+      : { to: "/agenda", label: "Agenda", icon: CalendarDays, permission: "appointments.view" };
+
+  return [
+    { to: "/dashboard", label: "Dashboard", icon: LayoutGrid },
+    scheduleItem,
+    { to: "/clientes", label: "Clientes", icon: Users, permission: "clients.view" },
+    { to: "/mensagens", label: "Mensagens", icon: MessageCircle, permission: "messages.view" },
+    { to: "/servicos", label: "Serviços", icon: Scissors, permission: "services.view" },
+    { to: "/profissionais", label: "Profissionais", icon: Users, permission: "employees.view" },
+    { to: "/equipe", label: "Equipe", icon: ShieldCheck, permission: "employees.view" },
+    { to: "/estoque", label: "Estoque", icon: Package, permission: "inventory.view" },
+    { to: "/financeiro", label: "Financeiro", icon: Wallet, permission: "finance.view" },
+    { to: "/configuracoes", label: "Configurações", icon: Settings, permission: "settings.view" },
+  ];
+}
+
+function NotificationBell() {
+  const navigate = useNavigate();
+  const hasPermission = useAuthStore((state) => state.hasPermission);
+  const canView = hasPermission("notifications.view");
+  const { data } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: () => listNotifications(1, 20),
+    enabled: canView,
+  });
+  const hasUnread = data?.items.some((n) => !n.read_at) ?? false;
+
+  if (!canView) return null;
+
+  return (
+    <button
+      onClick={() => navigate("/notificacoes")}
+      className="relative flex h-9 w-9 items-center justify-center rounded-full text-ink-400 hover:bg-ink-800"
+      aria-label="Notificações"
+    >
+      <Bell size={17} />
+      {hasUnread && <div className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-gold" />}
+    </button>
+  );
+}
 
 export function AppLayout() {
   const user = useAuthStore((state) => state.user);
@@ -34,39 +87,39 @@ export function AppLayout() {
     window.location.href = "/login";
   }
 
-  const visibleItems = NAV_ITEMS.filter((item) => !item.permission || hasPermission(item.permission));
+  const visibleItems = buildNavItems(tenant?.scheduling_mode).filter(
+    (item) => !item.permission || hasPermission(item.permission),
+  );
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-ink-950">
       {/* Barra superior — só em telas de celular (abaixo do breakpoint md) */}
-      <header className="fixed inset-x-0 top-0 z-20 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-3 dark:border-slate-800 dark:bg-slate-900 md:hidden">
+      <header className="fixed inset-x-0 top-0 z-20 flex h-14 items-center justify-between border-b border-white/[0.06] bg-ink-950 px-3 md:hidden">
         <button
           type="button"
           onClick={() => setDrawerOpen(true)}
           aria-label="Abrir menu"
-          className="rounded-md p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+          className="rounded-md p-2 text-ink-400 hover:bg-ink-900"
         >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+          <Menu size={19} />
         </button>
-        <p className="truncate text-sm font-semibold text-brand dark:text-white">
+        <p className="truncate font-serif text-sm font-semibold text-white">
           {tenant?.name ?? "BarberFlow"}
         </p>
-        <div className="w-9" aria-hidden="true" />
+        <NotificationBell />
       </header>
 
       {/* Fundo escurecido atrás da gaveta de navegação (mobile) */}
       {drawerOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/40 md:hidden"
+          className="fixed inset-0 z-30 bg-black/60 md:hidden"
           onClick={() => setDrawerOpen(false)}
           aria-hidden="true"
         />
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-200 bg-white transition-transform duration-200 ease-out dark:border-slate-800 dark:bg-slate-900 md:static md:z-auto md:w-60 md:translate-x-0 md:transition-none ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-white/[0.06] bg-ink-900 transition-transform duration-200 ease-out md:static md:z-auto md:w-60 md:translate-x-0 md:transition-none ${
           drawerOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -78,45 +131,51 @@ export function AppLayout() {
               className="h-8 max-w-full object-contain object-left"
             />
           ) : (
-            <p className="text-lg font-semibold text-brand dark:text-white">BarberFlow</p>
+            <p className="font-serif text-lg font-semibold italic text-gold">BarberFlow</p>
           )}
-          <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
-            {tenant?.name}
-          </p>
+          <p className="mt-0.5 truncate text-xs text-ink-500">{tenant?.name}</p>
         </div>
 
         <nav className="flex-1 space-y-1 px-3">
-          {visibleItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              onClick={() => setDrawerOpen(false)}
-              className={({ isActive }) =>
-                `block rounded-md px-3 py-2 text-sm font-medium transition ${
-                  isActive
-                    ? "bg-brand text-white"
-                    : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-                }`
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
+          {visibleItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={() => setDrawerOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                    isActive
+                      ? "bg-gold/[0.1] text-gold"
+                      : "text-ink-400 hover:bg-ink-800 hover:text-white"
+                  }`
+                }
+              >
+                <Icon size={16} strokeWidth={1.75} />
+                {item.label}
+              </NavLink>
+            );
+          })}
         </nav>
 
-        <div className="border-t border-slate-200 p-4 dark:border-slate-800">
-          <p className="truncate text-sm font-medium">{user?.full_name}</p>
-          <p className="truncate text-xs text-slate-500 dark:text-slate-400">{user?.role.name}</p>
+        <div className="border-t border-white/[0.06] p-4">
+          <p className="truncate text-sm font-medium text-white">{user?.full_name}</p>
+          <p className="truncate text-xs text-ink-500">{user?.role.name}</p>
           <button
             onClick={handleLogout}
-            className="mt-3 w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-md border border-white/[0.08] px-3 py-1.5 text-sm text-ink-300 hover:bg-ink-800"
           >
+            <LogOut size={14} strokeWidth={1.75} />
             Sair
           </button>
         </div>
       </aside>
 
       <main className="flex-1 overflow-y-auto pt-14 md:pt-0">
+        <div className="hidden justify-end border-b border-white/[0.06] px-6 py-3 md:flex">
+          <NotificationBell />
+        </div>
         <Outlet />
       </main>
     </div>

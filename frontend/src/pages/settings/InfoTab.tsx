@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { MapPin } from "lucide-react";
 import { z } from "zod";
 
 import { updateTenantSettings } from "@/api/settings";
@@ -10,10 +11,13 @@ import { useAuthStore } from "@/store/authStore";
 
 const infoSchema = z.object({
   name: z.string().min(2, "Informe o nome da barbearia"),
+  description: z.string().optional(),
   phone: z.string().optional(),
   email: z.union([z.string().email("E-mail inválido"), z.literal("")]).optional(),
   address: z.string().optional(),
   city: z.string().optional(),
+  latitude: z.string().optional(),
+  longitude: z.string().optional(),
 });
 
 type InfoFormValues = z.infer<typeof infoSchema>;
@@ -27,30 +31,53 @@ export function InfoTab({ tenant, canEdit }: InfoTabProps) {
   const queryClient = useQueryClient();
   const setTenant = useAuthStore((state) => state.setTenant);
   const [justSaved, setJustSaved] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<InfoFormValues>({
     resolver: zodResolver(infoSchema),
     defaultValues: {
       name: tenant.name,
+      description: tenant.description ?? "",
       phone: tenant.phone ?? "",
       email: tenant.email ?? "",
       address: tenant.address ?? "",
       city: tenant.city ?? "",
+      latitude: tenant.latitude ?? "",
+      longitude: tenant.longitude ?? "",
     },
   });
+
+  function useCurrentLocation() {
+    setGeoError(null);
+    if (!navigator.geolocation) {
+      setGeoError("Geolocalização não disponível neste navegador.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setValue("latitude", pos.coords.latitude.toFixed(6));
+        setValue("longitude", pos.coords.longitude.toFixed(6));
+      },
+      () => setGeoError("Não foi possível obter sua localização."),
+    );
+  }
 
   const mutation = useMutation({
     mutationFn: (values: InfoFormValues) =>
       updateTenantSettings({
         name: values.name,
+        description: values.description || null,
         phone: values.phone || null,
         email: values.email || null,
         address: values.address || null,
         city: values.city || null,
+        latitude: values.latitude ? Number(values.latitude) : null,
+        longitude: values.longitude ? Number(values.longitude) : null,
       }),
     onSuccess: (updated) => {
       queryClient.setQueryData(["settings-tenant"], updated);
@@ -72,84 +99,125 @@ export function InfoTab({ tenant, canEdit }: InfoTabProps) {
       noValidate
     >
       <div>
-        <label htmlFor="name" className="block text-sm font-medium">
+        <label htmlFor="name" className="field-label">
           Nome da barbearia
         </label>
         <input
           id="name"
           disabled={!canEdit}
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800"
+          className="field-input disabled:opacity-60"
           {...register("name")}
         />
-        {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
+        {errors.name && <p className="field-error">{errors.name.message}</p>}
+      </div>
+
+      <div>
+        <label htmlFor="description" className="field-label">
+          Descrição (opcional)
+        </label>
+        <textarea
+          id="description"
+          rows={3}
+          disabled={!canEdit}
+          placeholder="Conte um pouco sobre a barbearia — aparece no perfil público pro cliente."
+          className="field-input disabled:opacity-60"
+          {...register("description")}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor="phone" className="block text-sm font-medium">
+          <label htmlFor="phone" className="field-label">
             Telefone
           </label>
           <input
             id="phone"
             disabled={!canEdit}
             placeholder="(11) 98765-4321"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800"
+            className="field-input disabled:opacity-60"
             {...register("phone")}
           />
         </div>
         <div>
-          <label htmlFor="email" className="block text-sm font-medium">
+          <label htmlFor="email" className="field-label">
             E-mail de contato
           </label>
           <input
             id="email"
             disabled={!canEdit}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800"
+            className="field-input disabled:opacity-60"
             {...register("email")}
           />
-          {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
+          {errors.email && <p className="field-error">{errors.email.message}</p>}
         </div>
       </div>
 
       <div>
-        <label htmlFor="address" className="block text-sm font-medium">
+        <label htmlFor="address" className="field-label">
           Endereço
         </label>
         <input
           id="address"
           disabled={!canEdit}
           placeholder="Rua, número, bairro"
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800"
+          className="field-input disabled:opacity-60"
           {...register("address")}
         />
       </div>
 
       <div>
-        <label htmlFor="city" className="block text-sm font-medium">
+        <label htmlFor="city" className="field-label">
           Cidade
         </label>
         <input
           id="city"
           disabled={!canEdit}
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800"
+          className="field-input disabled:opacity-60"
           {...register("city")}
         />
       </div>
 
+      <div>
+        <div className="flex items-center justify-between">
+          <span className="field-label">Localização (usada na busca por proximidade)</span>
+          {canEdit && (
+            <button
+              type="button"
+              onClick={useCurrentLocation}
+              className="flex items-center gap-1 text-xs text-gold"
+            >
+              <MapPin size={11} />
+              Usar minha localização atual
+            </button>
+          )}
+        </div>
+        <div className="mt-1 grid grid-cols-2 gap-3">
+          <input
+            disabled={!canEdit}
+            placeholder="Latitude"
+            className="field-input mt-0 disabled:opacity-60"
+            {...register("latitude")}
+          />
+          <input
+            disabled={!canEdit}
+            placeholder="Longitude"
+            className="field-input mt-0 disabled:opacity-60"
+            {...register("longitude")}
+          />
+        </div>
+        {geoError && <p className="field-error">{geoError}</p>}
+      </div>
+
       {mutation.isError && (
-        <p className="text-sm text-red-600">Não foi possível salvar. Verifique os dados informados.</p>
+        <p className="text-sm text-red-400">Não foi possível salvar. Verifique os dados informados.</p>
       )}
 
       {canEdit && (
         <div className="flex items-center gap-3 pt-2">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
-          >
+          <button type="submit" disabled={isSubmitting} className="btn-primary">
             {isSubmitting ? "Salvando..." : "Salvar"}
           </button>
-          {justSaved && <span className="text-sm text-emerald-600 dark:text-emerald-400">Salvo!</span>}
+          {justSaved && <span className="text-sm text-emerald-400">Salvo!</span>}
         </div>
       )}
     </form>

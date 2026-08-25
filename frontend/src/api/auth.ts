@@ -31,3 +31,11 @@ export async function refresh(): Promise<AuthResponse> {
   const { data } = await api.post<AuthResponse>("/auth/refresh");
   return data;
 }
+
+export async function requestPasswordReset(email: string): Promise<void> {
+  await api.post("/auth/password-reset/request", { email });
+}
+
+export async function confirmPasswordReset(token: string, new_password: string): Promise<void> {
+  await api.post("/auth/password-reset/confirm", { token, new_password });
+}

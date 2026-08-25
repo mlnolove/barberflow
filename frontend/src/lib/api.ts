@@ -72,6 +72,14 @@ api.interceptors.response.use(
     const originalRequest = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined;
     const isAuthEndpoint = originalRequest?.url?.startsWith("/auth/");
 
+    // Assinatura inativa/expirada — o backend bloqueia todo o resto da API
+    // (menos o próprio módulo de configurações) com 402. Manda direto pra
+    // aba de assinatura em vez de deixar a tela travada num erro genérico.
+    if (error.response?.status === 402 && !window.location.pathname.startsWith("/configuracoes")) {
+      window.location.href = "/configuracoes?tab=subscription";
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
       try {

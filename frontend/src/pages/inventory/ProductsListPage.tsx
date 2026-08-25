@@ -40,19 +40,13 @@ export function ProductsListPage() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Estoque</h1>
+        <h1 className="font-serif text-xl font-semibold text-white">Estoque</h1>
         <div className="flex gap-2">
-          <Link
-            to="/estoque/fornecedores"
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-          >
+          <Link to="/estoque/fornecedores" className="btn-secondary">
             Fornecedores
           </Link>
           {hasPermission("inventory.create") && (
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-            >
+            <button onClick={() => setShowCreateModal(true)} className="btn-primary">
               Novo produto
             </button>
           )}
@@ -67,7 +61,7 @@ export function ProductsListPage() {
             setPage(1);
           }}
           placeholder="Buscar por nome, SKU ou categoria"
-          className="w-72 rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="w-72 rounded-md border border-white/[0.08] bg-ink-900 px-3 py-2 text-sm text-white placeholder:text-ink-600"
         />
         <select
           value={status}
@@ -75,13 +69,13 @@ export function ProductsListPage() {
             setStatus(e.target.value as StatusFilter);
             setPage(1);
           }}
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="rounded-md border border-white/[0.08] bg-ink-900 px-3 py-2 text-sm text-white"
         >
           <option value="active">Ativos</option>
           <option value="inactive">Inativos</option>
           <option value="all">Todos</option>
         </select>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex items-center gap-2 text-sm text-ink-300">
           <input
             type="checkbox"
             checked={lowStockOnly}
@@ -94,9 +88,9 @@ export function ProductsListPage() {
         </label>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+      <div className="table-card mt-4">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+          <thead className="table-head">
             <tr>
               <th className="px-4 py-3 font-medium">Produto</th>
               <th className="px-4 py-3 font-medium">Categoria</th>
@@ -108,21 +102,21 @@ export function ProductsListPage() {
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={5} className="px-4 py-6 text-center text-ink-500">
                   Carregando...
                 </td>
               </tr>
             )}
             {isError && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-red-600">
+                <td colSpan={5} className="px-4 py-6 text-center text-red-400">
                   Não foi possível carregar os produtos.
                 </td>
               </tr>
             )}
             {data && data.items.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={5} className="px-4 py-6 text-center text-ink-500">
                   Nenhum produto encontrado.
                 </td>
               </tr>
@@ -131,32 +125,24 @@ export function ProductsListPage() {
               <tr
                 key={product.id}
                 onClick={() => navigate(`/estoque/${product.id}`)}
-                className="cursor-pointer border-t border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900"
+                className="table-row text-white"
               >
                 <td className="px-4 py-3 font-medium">
                   {product.name}
-                  {product.sku && (
-                    <span className="ml-2 text-xs text-slate-400">{product.sku}</span>
-                  )}
+                  {product.sku && <span className="ml-2 text-xs text-ink-600">{product.sku}</span>}
                 </td>
                 <td className="px-4 py-3">{product.category ?? "—"}</td>
                 <td className="px-4 py-3">
                   {product.current_quantity}
                   {product.is_low_stock && (
-                    <span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/40 dark:text-red-300">
+                    <span className="ml-2 rounded-full bg-red-950/40 px-2 py-0.5 text-xs font-medium text-red-300">
                       ⚠️ Baixo
                     </span>
                   )}
                 </td>
                 <td className="px-4 py-3">{formatPrice(product.sale_price)}</td>
                 <td className="px-4 py-3">
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                      product.is_active
-                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
-                        : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
-                    }`}
-                  >
+                  <span className={product.is_active ? "badge-active" : "badge-inactive"}>
                     {product.is_active ? "Ativo" : "Inativo"}
                   </span>
                 </td>
@@ -167,7 +153,7 @@ export function ProductsListPage() {
       </div>
 
       {data && data.total > 0 && (
-        <div className="mt-4 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+        <div className="mt-4 flex items-center justify-between text-sm text-ink-500">
           <span>
             {data.total} produto{data.total !== 1 ? "s" : ""} — página {page} de {totalPages}
           </span>
@@ -175,14 +161,14 @@ export function ProductsListPage() {
             <button
               disabled={page <= 1}
               onClick={() => setPage((p) => p - 1)}
-              className="rounded-md border border-slate-300 px-3 py-1 disabled:opacity-40 dark:border-slate-700"
+              className="rounded-md border border-white/[0.08] px-3 py-1 text-ink-300 disabled:opacity-40"
             >
               Anterior
             </button>
             <button
               disabled={page >= totalPages}
               onClick={() => setPage((p) => p + 1)}
-              className="rounded-md border border-slate-300 px-3 py-1 disabled:opacity-40 dark:border-slate-700"
+              className="rounded-md border border-white/[0.08] px-3 py-1 text-ink-300 disabled:opacity-40"
             >
               Próxima
             </button>

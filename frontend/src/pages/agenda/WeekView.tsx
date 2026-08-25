@@ -28,23 +28,21 @@ export function WeekView({ date, appointments, onSelectDay }: WeekViewProps) {
           <button
             key={dayStr}
             onClick={() => onSelectDay(dayStr)}
-            className="min-h-[140px] rounded-xl border border-slate-200 p-3 text-left hover:border-brand-secondary dark:border-slate-800"
+            className="min-h-[140px] rounded-xl border border-white/[0.06] p-3 text-left hover:border-gold/50"
           >
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-              {DAY_LABELS[index]}
-            </p>
-            <p className="text-sm font-semibold">{day.getDate()}</p>
+            <p className="text-xs font-medium text-ink-500">{DAY_LABELS[index]}</p>
+            <p className="text-sm font-semibold text-white">{day.getDate()}</p>
             <div className="mt-2 space-y-1">
               {dayAppointments.slice(0, 4).map((a) => (
-                <p key={a.id} className="truncate text-xs">
+                <p key={a.id} className="truncate text-xs text-ink-300">
                   {formatTime(a.starts_at)} {a.customer.full_name}
                 </p>
               ))}
               {dayAppointments.length > 4 && (
-                <p className="text-xs text-slate-400">+{dayAppointments.length - 4} mais</p>
+                <p className="text-xs text-ink-600">+{dayAppointments.length - 4} mais</p>
               )}
               {dayAppointments.length === 0 && (
-                <p className="text-xs text-slate-400">Sem agendamentos</p>
+                <p className="text-xs text-ink-600">Sem agendamentos</p>
               )}
             </div>
           </button>

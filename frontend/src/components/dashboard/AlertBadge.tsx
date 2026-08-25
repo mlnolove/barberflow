@@ -5,12 +5,9 @@ interface AlertBadgeProps {
 }
 
 const SEVERITY_STYLES: Record<AlertBadgeProps["severity"], string> = {
-  warning:
-    "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300",
-  critical:
-    "border-red-300 bg-red-50 text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300",
-  neutral:
-    "border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400",
+  warning: "border-amber-800/40 bg-amber-950/30 text-amber-300",
+  critical: "border-red-900/40 bg-red-950/30 text-red-300",
+  neutral: "border-white/[0.06] bg-ink-900 text-ink-500",
 };
 
 const SEVERITY_ICON: Record<AlertBadgeProps["severity"], string> = {

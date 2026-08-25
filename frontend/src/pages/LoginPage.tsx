@@ -3,8 +3,12 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
+import { Lock, Mail } from "lucide-react";
 
 import { login } from "@/api/auth";
+import { AuthButton } from "@/components/auth/AuthButton";
+import { AuthField } from "@/components/auth/AuthField";
+import { ClientTopBar } from "@/components/client/ClientTopBar";
 import { useAuthStore } from "@/store/authStore";
 
 const loginSchema = z.object({
@@ -37,61 +41,55 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <h1 className="text-2xl font-semibold text-brand dark:text-white">BarberFlow</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Entre para gerenciar sua barbearia.
-        </p>
+    <div className="flex h-screen flex-col bg-ink-950">
+      <ClientTopBar onBack={() => navigate("/entrar-como")} />
+      <div className="flex flex-1 flex-col px-6 pb-8 pt-2">
+        <div className="mb-8 flex flex-col gap-2">
+          <h1 className="font-serif text-2xl text-white">Entrar</h1>
+          <p className="text-sm text-ink-400">Gerencie sua barbearia.</p>
+        </div>
 
-        <form className="mt-6 space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium">
-              E-mail
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-secondary focus:outline-none focus:ring-1 focus:ring-brand-secondary dark:border-slate-700 dark:bg-slate-800"
-              {...register("email")}
-            />
-            {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-1 flex-col gap-4">
+          <AuthField
+            label="E-mail"
+            icon={Mail}
+            type="email"
+            autoComplete="email"
+            placeholder="seu@email.com"
+            error={errors.email?.message}
+            {...register("email")}
+          />
+          <AuthField
+            label="Senha"
+            icon={Lock}
+            type="password"
+            autoComplete="current-password"
+            placeholder="••••••••"
+            error={errors.password?.message}
+            {...register("password")}
+          />
+          <div className="flex justify-end">
+            <Link to="/esqueci-senha" className="text-xs text-gold">
+              Esqueci minha senha
+            </Link>
           </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium">
-              Senha
-            </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-secondary focus:outline-none focus:ring-1 focus:ring-brand-secondary dark:border-slate-700 dark:bg-slate-800"
-              {...register("password")}
-            />
-            {errors.password && (
-              <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>
-            )}
+          {serverError && <p className="text-sm text-red-400">{serverError}</p>}
+
+          <div className="mt-auto flex flex-col gap-3">
+            <AuthButton type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Entrando..." : "Entrar"}
+            </AuthButton>
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-white/[0.06]" />
+              <span className="text-xs text-ink-500">ou</span>
+              <div className="h-px flex-1 bg-white/[0.06]" />
+            </div>
+            <AuthButton type="button" variant="outline" onClick={() => navigate("/signup")}>
+              Cadastrar barbearia
+            </AuthButton>
           </div>
-
-          {serverError && <p className="text-sm text-red-600">{serverError}</p>}
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-md bg-brand px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
-          >
-            {isSubmitting ? "Entrando..." : "Entrar"}
-          </button>
         </form>
-
-        <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
-          Ainda não tem uma conta?{" "}
-          <Link to="/signup" className="font-medium text-brand-secondary hover:underline">
-            Cadastre sua barbearia
-          </Link>
-        </p>
       </div>
     </div>
   );

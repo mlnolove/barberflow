@@ -1,10 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
+import { Lock, Mail, Scissors, User } from "lucide-react";
 
 import { signup } from "@/api/auth";
+import { AuthButton } from "@/components/auth/AuthButton";
+import { AuthField } from "@/components/auth/AuthField";
+import { ClientTopBar } from "@/components/client/ClientTopBar";
 import { useAuthStore } from "@/store/authStore";
 
 const signupSchema = z.object({
@@ -39,91 +43,62 @@ export function SignupPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-10">
-      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <h1 className="text-2xl font-semibold text-brand dark:text-white">Crie sua barbearia</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Comece a usar o BarberFlow em poucos minutos.
-        </p>
+    <div className="flex min-h-screen flex-col bg-ink-950">
+      <ClientTopBar onBack={() => navigate("/entrar-como")} />
+      <div className="flex flex-1 flex-col px-6 pb-8 pt-2">
+        <div className="mb-8 flex flex-col gap-2">
+          <h1 className="font-serif text-2xl text-white">Crie sua barbearia</h1>
+          <p className="text-sm text-ink-400">Comece a usar o BarberFlow em poucos minutos.</p>
+        </div>
 
-        <form className="mt-6 space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
-          <div>
-            <label htmlFor="tenant_name" className="block text-sm font-medium">
-              Nome da barbearia
-            </label>
-            <input
-              id="tenant_name"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-secondary focus:outline-none focus:ring-1 focus:ring-brand-secondary dark:border-slate-700 dark:bg-slate-800"
-              {...register("tenant_name")}
-            />
-            {errors.tenant_name && (
-              <p className="mt-1 text-xs text-red-600">{errors.tenant_name.message}</p>
-            )}
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-1 flex-col gap-4">
+          <AuthField
+            label="Nome da barbearia"
+            icon={Scissors}
+            error={errors.tenant_name?.message}
+            {...register("tenant_name")}
+          />
+          <AuthField
+            label="Seu nome completo"
+            icon={User}
+            error={errors.owner_full_name?.message}
+            {...register("owner_full_name")}
+          />
+          <AuthField
+            label="E-mail"
+            icon={Mail}
+            type="email"
+            autoComplete="email"
+            placeholder="seu@email.com"
+            error={errors.owner_email?.message}
+            {...register("owner_email")}
+          />
+          <AuthField
+            label="Senha"
+            icon={Lock}
+            type="password"
+            autoComplete="new-password"
+            placeholder="••••••••"
+            error={errors.owner_password?.message}
+            {...register("owner_password")}
+          />
+
+          {serverError && <p className="text-sm text-red-400">{serverError}</p>}
+
+          <div className="mt-auto flex flex-col gap-3 pt-2">
+            <AuthButton type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Criando..." : "Criar conta"}
+            </AuthButton>
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-white/[0.06]" />
+              <span className="text-xs text-ink-500">ou</span>
+              <div className="h-px flex-1 bg-white/[0.06]" />
+            </div>
+            <AuthButton type="button" variant="outline" onClick={() => navigate("/login")}>
+              Já tenho uma conta
+            </AuthButton>
           </div>
-
-          <div>
-            <label htmlFor="owner_full_name" className="block text-sm font-medium">
-              Seu nome completo
-            </label>
-            <input
-              id="owner_full_name"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-secondary focus:outline-none focus:ring-1 focus:ring-brand-secondary dark:border-slate-700 dark:bg-slate-800"
-              {...register("owner_full_name")}
-            />
-            {errors.owner_full_name && (
-              <p className="mt-1 text-xs text-red-600">{errors.owner_full_name.message}</p>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="owner_email" className="block text-sm font-medium">
-              E-mail
-            </label>
-            <input
-              id="owner_email"
-              type="email"
-              autoComplete="email"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-secondary focus:outline-none focus:ring-1 focus:ring-brand-secondary dark:border-slate-700 dark:bg-slate-800"
-              {...register("owner_email")}
-            />
-            {errors.owner_email && (
-              <p className="mt-1 text-xs text-red-600">{errors.owner_email.message}</p>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="owner_password" className="block text-sm font-medium">
-              Senha
-            </label>
-            <input
-              id="owner_password"
-              type="password"
-              autoComplete="new-password"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-secondary focus:outline-none focus:ring-1 focus:ring-brand-secondary dark:border-slate-700 dark:bg-slate-800"
-              {...register("owner_password")}
-            />
-            {errors.owner_password && (
-              <p className="mt-1 text-xs text-red-600">{errors.owner_password.message}</p>
-            )}
-          </div>
-
-          {serverError && <p className="text-sm text-red-600">{serverError}</p>}
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-md bg-brand px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
-          >
-            {isSubmitting ? "Criando..." : "Criar conta"}
-          </button>
         </form>
-
-        <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
-          Já tem uma conta?{" "}
-          <Link to="/login" className="font-medium text-brand-secondary hover:underline">
-            Entrar
-          </Link>
-        </p>
       </div>
     </div>
   );

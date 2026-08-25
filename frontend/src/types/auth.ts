@@ -15,15 +15,20 @@ export interface User {
   permissions: string[];
 }
 
+export type SchedulingMode = "TIME_SLOT" | "QUEUE";
+
 export interface Tenant {
   id: string;
   name: string;
   slug: string;
   logo_url: string | null;
+  description: string | null;
   phone: string | null;
   email: string | null;
   address: string | null;
   city: string | null;
+  latitude: string | null;
+  longitude: string | null;
   primary_color: string;
   secondary_color: string;
   onboarding_completed: boolean;
@@ -31,6 +36,9 @@ export interface Tenant {
   min_advance_minutes: number;
   max_advance_days: number;
   allow_cancellation: boolean;
+  scheduling_mode: SchedulingMode;
+  auto_approve_appointments: boolean;
+  cancellation_deadline_minutes: number | null;
 }
 
 export interface AuthResponse {

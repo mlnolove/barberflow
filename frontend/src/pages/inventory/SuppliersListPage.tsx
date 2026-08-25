@@ -36,25 +36,22 @@ export function SuppliersListPage() {
 
   return (
     <div className="p-6">
-      <Link to="/estoque" className="text-sm text-brand-secondary hover:underline">
+      <Link to="/estoque" className="text-sm text-gold hover:underline">
         ← Voltar para estoque
       </Link>
 
       <div className="mt-3 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Fornecedores</h1>
+        <h1 className="font-serif text-xl font-semibold text-white">Fornecedores</h1>
         {hasPermission("inventory.create") && (
-          <button
-            onClick={openCreate}
-            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-          >
+          <button onClick={openCreate} className="btn-primary">
             Novo fornecedor
           </button>
         )}
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+      <div className="table-card mt-4">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+          <thead className="table-head">
             <tr>
               <th className="px-4 py-3 font-medium">Nome</th>
               <th className="px-4 py-3 font-medium">Telefone</th>
@@ -66,38 +63,32 @@ export function SuppliersListPage() {
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={5} className="px-4 py-6 text-center text-ink-500">
                   Carregando...
                 </td>
               </tr>
             )}
             {isError && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-red-600">
+                <td colSpan={5} className="px-4 py-6 text-center text-red-400">
                   Não foi possível carregar os fornecedores.
                 </td>
               </tr>
             )}
             {suppliers?.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={5} className="px-4 py-6 text-center text-ink-500">
                   Nenhum fornecedor cadastrado.
                 </td>
               </tr>
             )}
             {suppliers?.map((supplier) => (
-              <tr key={supplier.id} className="border-t border-slate-100 dark:border-slate-800">
+              <tr key={supplier.id} className="border-t border-white/[0.05] text-white">
                 <td className="px-4 py-3 font-medium">{supplier.name}</td>
                 <td className="px-4 py-3">{supplier.phone ?? "—"}</td>
                 <td className="px-4 py-3">{supplier.email ?? "—"}</td>
                 <td className="px-4 py-3">
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                      supplier.is_active
-                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
-                        : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
-                    }`}
-                  >
+                  <span className={supplier.is_active ? "badge-active" : "badge-inactive"}>
                     {supplier.is_active ? "Ativo" : "Inativo"}
                   </span>
                 </td>
@@ -106,13 +97,13 @@ export function SuppliersListPage() {
                     <div className="flex justify-end gap-2">
                       <button
                         onClick={() => openEdit(supplier)}
-                        className="rounded-md border border-slate-300 px-2.5 py-1 text-xs hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                        className="rounded-md border border-white/[0.08] px-2.5 py-1 text-xs text-ink-300 hover:bg-ink-800"
                       >
                         Editar
                       </button>
                       <button
                         onClick={() => toggleStatusMutation.mutate(supplier)}
-                        className="rounded-md border border-slate-300 px-2.5 py-1 text-xs hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                        className="rounded-md border border-white/[0.08] px-2.5 py-1 text-xs text-ink-300 hover:bg-ink-800"
                       >
                         {supplier.is_active ? "Desativar" : "Reativar"}
                       </button>

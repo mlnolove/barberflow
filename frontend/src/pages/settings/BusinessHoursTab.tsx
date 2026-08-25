@@ -72,8 +72,8 @@ function BusinessHoursRow({ hours, canEdit }: RowProps) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 py-3 last:border-0 dark:border-slate-800">
-      <label className="flex w-28 items-center gap-2 text-sm font-medium">
+    <div className="flex flex-wrap items-center gap-3 border-b border-white/[0.05] py-3 last:border-0">
+      <label className="flex w-28 items-center gap-2 text-sm font-medium text-white">
         <input
           type="checkbox"
           disabled={!canEdit}
@@ -90,18 +90,18 @@ function BusinessHoursRow({ hours, canEdit }: RowProps) {
             disabled={!canEdit}
             value={openTime}
             onChange={(e) => setOpenTime(e.target.value)}
-            className="rounded-md border border-slate-300 px-2 py-1.5 text-sm disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800"
+            className="rounded-md border border-white/[0.08] bg-ink-800 px-2 py-1.5 text-sm text-white disabled:opacity-60"
           />
-          <span className="text-sm text-slate-400">às</span>
+          <span className="text-sm text-ink-600">às</span>
           <input
             type="time"
             disabled={!canEdit}
             value={closeTime}
             onChange={(e) => setCloseTime(e.target.value)}
-            className="rounded-md border border-slate-300 px-2 py-1.5 text-sm disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800"
+            className="rounded-md border border-white/[0.08] bg-ink-800 px-2 py-1.5 text-sm text-white disabled:opacity-60"
           />
 
-          <label className="ml-2 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+          <label className="ml-2 flex items-center gap-1.5 text-xs text-ink-500">
             <input
               type="checkbox"
               disabled={!canEdit}
@@ -117,21 +117,21 @@ function BusinessHoursRow({ hours, canEdit }: RowProps) {
                 disabled={!canEdit}
                 value={breakStart}
                 onChange={(e) => setBreakStart(e.target.value)}
-                className="rounded-md border border-slate-300 px-2 py-1.5 text-sm disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800"
+                className="rounded-md border border-white/[0.08] bg-ink-800 px-2 py-1.5 text-sm text-white disabled:opacity-60"
               />
-              <span className="text-sm text-slate-400">às</span>
+              <span className="text-sm text-ink-600">às</span>
               <input
                 type="time"
                 disabled={!canEdit}
                 value={breakEnd}
                 onChange={(e) => setBreakEnd(e.target.value)}
-                className="rounded-md border border-slate-300 px-2 py-1.5 text-sm disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800"
+                className="rounded-md border border-white/[0.08] bg-ink-800 px-2 py-1.5 text-sm text-white disabled:opacity-60"
               />
             </>
           )}
         </>
       ) : (
-        <span className="text-sm text-slate-400">Fechado</span>
+        <span className="text-sm text-ink-600">Fechado</span>
       )}
 
       {canEdit && (
@@ -139,13 +139,13 @@ function BusinessHoursRow({ hours, canEdit }: RowProps) {
           type="button"
           onClick={handleSave}
           disabled={mutation.isPending}
-          className="ml-auto rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:hover:bg-slate-800"
+          className="ml-auto rounded-md border border-white/[0.08] px-3 py-1.5 text-xs font-medium text-ink-300 hover:bg-ink-800 disabled:opacity-60"
         >
           {mutation.isPending ? "Salvando..." : "Salvar"}
         </button>
       )}
-      {justSaved && <span className="text-xs text-emerald-600 dark:text-emerald-400">Salvo!</span>}
-      {error && <p className="w-full text-xs text-red-600">{error}</p>}
+      {justSaved && <span className="text-xs text-emerald-400">Salvo!</span>}
+      {error && <p className="w-full text-xs text-red-400">{error}</p>}
     </div>
   );
 }
@@ -158,14 +158,14 @@ export function BusinessHoursTab({ canEdit }: { canEdit: boolean }) {
 
   return (
     <div className="max-w-3xl">
-      <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+      <p className="mb-4 text-sm text-ink-500">
         Defina os dias e horários em que a barbearia atende. Fora desses horários — e durante o
         intervalo, se houver — a agenda não aceita novos agendamentos.
       </p>
-      {isLoading && <p className="text-sm text-slate-500">Carregando...</p>}
-      {isError && <p className="text-sm text-red-600">Não foi possível carregar os horários.</p>}
+      {isLoading && <p className="text-sm text-ink-500">Carregando...</p>}
+      {isError && <p className="text-sm text-red-400">Não foi possível carregar os horários.</p>}
       {data && (
-        <div className="rounded-xl border border-slate-200 px-4 dark:border-slate-800">
+        <div className="rounded-xl border border-white/[0.06] bg-ink-900 px-4">
           {data.map((h) => (
             <BusinessHoursRow key={h.weekday} hours={h} canEdit={canEdit} />
           ))}

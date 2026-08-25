@@ -55,12 +55,9 @@ export function ServicesListPage() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Serviços</h1>
+        <h1 className="font-serif text-xl font-semibold text-white">Serviços</h1>
         {hasPermission("services.create") && (
-          <button
-            onClick={openCreate}
-            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-          >
+          <button onClick={openCreate} className="btn-primary">
             Novo serviço
           </button>
         )}
@@ -74,7 +71,7 @@ export function ServicesListPage() {
             setPage(1);
           }}
           placeholder="Buscar por nome ou categoria"
-          className="w-72 rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="w-72 rounded-md border border-white/[0.08] bg-ink-900 px-3 py-2 text-sm text-white placeholder:text-ink-600"
         />
         <select
           value={status}
@@ -82,7 +79,7 @@ export function ServicesListPage() {
             setStatus(e.target.value as StatusFilter);
             setPage(1);
           }}
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="rounded-md border border-white/[0.08] bg-ink-900 px-3 py-2 text-sm text-white"
         >
           <option value="active">Ativos</option>
           <option value="inactive">Inativos</option>
@@ -91,52 +88,33 @@ export function ServicesListPage() {
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {isLoading && <p className="text-slate-500">Carregando...</p>}
-        {isError && <p className="text-red-600">Não foi possível carregar os serviços.</p>}
-        {data && data.items.length === 0 && (
-          <p className="text-slate-500">Nenhum serviço encontrado.</p>
-        )}
+        {isLoading && <p className="text-ink-500">Carregando...</p>}
+        {isError && <p className="text-red-400">Não foi possível carregar os serviços.</p>}
+        {data && data.items.length === 0 && <p className="text-ink-500">Nenhum serviço encontrado.</p>}
         {data?.items.map((service) => (
-          <div
-            key={service.id}
-            className="rounded-xl border border-slate-200 p-4 dark:border-slate-800"
-          >
+          <div key={service.id} className="rounded-xl border border-white/[0.06] bg-ink-900 p-4">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="font-medium">{service.name}</h3>
-                {service.category && (
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{service.category}</p>
-                )}
+                <h3 className="font-medium text-white">{service.name}</h3>
+                {service.category && <p className="text-xs text-ink-500">{service.category}</p>}
               </div>
-              <span
-                className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                  service.is_active
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
-                    : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
-                }`}
-              >
+              <span className={service.is_active ? "badge-active" : "badge-inactive"}>
                 {service.is_active ? "Ativo" : "Inativo"}
               </span>
             </div>
 
-            <p className="mt-3 text-lg font-semibold">{formatPrice(service.price)}</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              {service.duration_minutes} minutos
+            <p className="mt-3 font-mono text-lg font-semibold text-gold">
+              {formatPrice(service.price)}
             </p>
+            <p className="text-sm text-ink-500">{service.duration_minutes} minutos</p>
 
             {hasPermission("services.edit") && (
               <div className="mt-4 flex gap-2">
-                <button
-                  onClick={() => openEdit(service)}
-                  className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-                >
+                <button onClick={() => openEdit(service)} className="btn-secondary">
                   Editar
                 </button>
                 {hasPermission("services.delete") && (
-                  <button
-                    onClick={() => toggleStatusMutation.mutate(service)}
-                    className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-                  >
+                  <button onClick={() => toggleStatusMutation.mutate(service)} className="btn-secondary">
                     {service.is_active ? "Desativar" : "Reativar"}
                   </button>
                 )}
@@ -147,7 +125,7 @@ export function ServicesListPage() {
       </div>
 
       {data && data.total > 0 && (
-        <div className="mt-4 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+        <div className="mt-4 flex items-center justify-between text-sm text-ink-500">
           <span>
             {data.total} serviço{data.total !== 1 ? "s" : ""} — página {page} de {totalPages}
           </span>
@@ -155,14 +133,14 @@ export function ServicesListPage() {
             <button
               disabled={page <= 1}
               onClick={() => setPage((p) => p - 1)}
-              className="rounded-md border border-slate-300 px-3 py-1 disabled:opacity-40 dark:border-slate-700"
+              className="rounded-md border border-white/[0.08] px-3 py-1 text-ink-300 disabled:opacity-40"
             >
               Anterior
             </button>
             <button
               disabled={page >= totalPages}
               onClick={() => setPage((p) => p + 1)}
-              className="rounded-md border border-slate-300 px-3 py-1 disabled:opacity-40 dark:border-slate-700"
+              className="rounded-md border border-white/[0.08] px-3 py-1 text-ink-300 disabled:opacity-40"
             >
               Próxima
             </button>

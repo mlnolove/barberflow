@@ -14,33 +14,29 @@ interface UpcomingAppointmentsListProps {
 
 export function UpcomingAppointmentsList({ items }: UpcomingAppointmentsListProps) {
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-800">
-      <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-        <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-300">
-          Próximos agendamentos
-        </h3>
-        <Link to="/agenda" className="text-xs text-brand-secondary hover:underline">
+    <div className="rounded-xl border border-white/[0.06] bg-ink-900">
+      <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
+        <h3 className="text-sm font-semibold text-ink-300">Próximos agendamentos</h3>
+        <Link to="/agenda" className="text-xs text-gold hover:underline">
           Ver agenda →
         </Link>
       </div>
       {items.length === 0 ? (
-        <p className="px-4 py-6 text-center text-sm text-slate-400">
-          Nenhum agendamento próximo.
-        </p>
+        <p className="px-4 py-6 text-center text-sm text-ink-600">Nenhum agendamento próximo.</p>
       ) : (
-        <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+        <ul className="divide-y divide-white/[0.05]">
           {items.map((item) => (
             <li key={item.id} className="flex items-center gap-4 px-4 py-3 text-sm">
-              <span className="w-12 shrink-0 font-semibold tabular-nums">
+              <span className="w-12 shrink-0 font-mono font-semibold tabular-nums text-white">
                 {formatTime(item.starts_at)}
               </span>
               <div className="flex-1">
-                <p className="font-medium">{item.customer_name}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="font-medium text-white">{item.customer_name}</p>
+                <p className="text-xs text-ink-500">
                   {item.service_name} · {item.employee_name}
                 </p>
               </div>
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+              <span className="rounded-full bg-ink-800 px-2 py-0.5 text-xs text-ink-400">
                 {STATUS_LABELS[item.status] ?? item.status}
               </span>
             </li>

@@ -69,26 +69,26 @@ export function CompleteModal({ appointment, onClose }: CompleteModalProps) {
     <Modal title={`Finalizar atendimento — ${appointment.customer.full_name}`} onClose={onClose}>
       <div className="max-h-[70vh] space-y-4 overflow-y-auto pr-1">
         <div>
-          <label htmlFor="price" className="block text-sm font-medium">
+          <label htmlFor="price" className="block text-sm font-medium text-ink-300">
             Valor cobrado (R$)
           </label>
           <input
             id="price"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="mt-1 w-full rounded-md border border-white/[0.08] bg-ink-800 px-3 py-2 text-sm text-white"
           />
         </div>
 
         <div>
-          <label htmlFor="payment_method" className="block text-sm font-medium">
+          <label htmlFor="payment_method" className="block text-sm font-medium text-ink-300">
             Forma de pagamento
           </label>
           <select
             id="payment_method"
             value={paymentMethodCode}
             onChange={(e) => setPaymentMethodCode(e.target.value)}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="mt-1 w-full rounded-md border border-white/[0.08] bg-ink-800 px-3 py-2 text-sm text-white"
           >
             <option value="">Selecione...</option>
             {activeMethods.map((m) => (
@@ -101,12 +101,12 @@ export function CompleteModal({ appointment, onClose }: CompleteModalProps) {
 
         {productsPage && productsPage.items.length > 0 && (
           <div>
-            <span className="block text-sm font-medium">Produtos vendidos (opcional)</span>
+            <span className="block text-sm font-medium text-ink-300">Produtos vendidos (opcional)</span>
             <div className="mt-1 space-y-2">
               {productsPage.items.map((product) => {
                 const sold = productsSold.find((p) => p.product_id === product.id);
                 return (
-                  <div key={product.id} className="flex items-center gap-2 text-sm">
+                  <div key={product.id} className="flex items-center gap-2 text-sm text-white">
                     <input
                       type="checkbox"
                       checked={Boolean(sold)}
@@ -119,7 +119,7 @@ export function CompleteModal({ appointment, onClose }: CompleteModalProps) {
                         min={1}
                         value={sold.quantity}
                         onChange={(e) => updateQuantity(product.id, Number(e.target.value))}
-                        className="w-16 rounded-md border border-slate-300 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800"
+                        className="w-16 rounded-md border border-white/[0.08] bg-ink-800 px-2 py-1 text-sm text-white"
                       />
                     )}
                   </div>
@@ -129,13 +129,13 @@ export function CompleteModal({ appointment, onClose }: CompleteModalProps) {
           </div>
         )}
 
-        {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+        {serverError && <p className="text-sm text-red-400">{serverError}</p>}
 
         <div className="flex justify-end gap-2 pt-2">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+            className="rounded-md border border-white/[0.08] px-4 py-2 text-sm text-ink-300 hover:bg-ink-800"
           >
             Cancelar
           </button>
@@ -143,7 +143,7 @@ export function CompleteModal({ appointment, onClose }: CompleteModalProps) {
             type="button"
             onClick={() => mutation.mutate()}
             disabled={mutation.isPending || !paymentMethodCode}
-            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
+            className="rounded-md bg-gold px-4 py-2 text-sm font-medium text-ink-950 hover:opacity-90 disabled:opacity-60"
           >
             {mutation.isPending ? "Salvando..." : "Finalizar"}
           </button>

@@ -7,8 +7,8 @@ interface ChartCardProps {
 
 export function ChartCard({ title, children }: ChartCardProps) {
   return (
-    <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-      <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-300">{title}</h3>
+    <div className="rounded-xl border border-white/[0.06] bg-ink-900 p-4">
+      <h3 className="text-sm font-semibold text-ink-300">{title}</h3>
       <div className="mt-3 h-64 w-full overflow-x-auto">{children}</div>
     </div>
   );

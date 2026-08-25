@@ -5,10 +5,11 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 
+from app.core.rate_limit import _hits as _rate_limit_hits
 from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
-from app.seed import _seed_permissions, _seed_roles
+from app.seed import _seed_permissions, _seed_roles, _seed_subscription_plans
 
 TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL",
@@ -26,6 +27,7 @@ def setup_database():
     with TestingSessionLocal() as db:
         permissions = _seed_permissions(db)
         _seed_roles(db, permissions)
+        _seed_subscription_plans(db)
         db.commit()
     yield
     Base.metadata.drop_all(engine)
@@ -51,6 +53,16 @@ def db_session():
     session.close()
     outer_transaction.rollback()
     connection.close()
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limits():
+    """O limiter em memória (`app.core.rate_limit`) é um estado global de
+    processo, não do banco — sem isso, testes que fazem vários signup/login
+    (a maioria da suíte) esbarrariam no limite uns nos outros, já que o
+    TestClient sempre reporta o mesmo IP falso ("testclient")."""
+    _rate_limit_hits.clear()
+    yield
 
 
 @pytest.fixture

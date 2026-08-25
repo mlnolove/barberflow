@@ -79,95 +79,87 @@ export function CustomerFormModal({ customer, onClose, onSaved }: CustomerFormMo
     <Modal title={isEditing ? "Editar cliente" : "Novo cliente"} onClose={onClose}>
       <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
         <div>
-          <label htmlFor="full_name" className="block text-sm font-medium">
+          <label htmlFor="full_name" className="field-label">
             Nome completo
           </label>
           <input
             id="full_name"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             {...register("full_name")}
           />
           {errors.full_name && (
-            <p className="mt-1 text-xs text-red-600">{errors.full_name.message}</p>
+            <p className="field-error">{errors.full_name.message}</p>
           )}
         </div>
 
         <div>
-          <label htmlFor="phone" className="block text-sm font-medium">
+          <label htmlFor="phone" className="field-label">
             Telefone
           </label>
           <input
             id="phone"
             placeholder="(11) 91234-5678"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             {...register("phone")}
           />
-          {errors.phone && <p className="mt-1 text-xs text-red-600">{errors.phone.message}</p>}
+          {errors.phone && <p className="field-error">{errors.phone.message}</p>}
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium">
+          <label htmlFor="email" className="field-label">
             E-mail (opcional)
           </label>
           <input
             id="email"
             type="email"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             {...register("email")}
           />
-          {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
+          {errors.email && <p className="field-error">{errors.email.message}</p>}
         </div>
 
         <div>
-          <label htmlFor="birth_date" className="block text-sm font-medium">
+          <label htmlFor="birth_date" className="field-label">
             Data de nascimento (opcional)
           </label>
           <input
             id="birth_date"
             type="date"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             {...register("birth_date")}
           />
         </div>
 
         <div>
-          <label htmlFor="address" className="block text-sm font-medium">
+          <label htmlFor="address" className="field-label">
             Endereço (opcional)
           </label>
           <input
             id="address"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             {...register("address")}
           />
         </div>
 
         <div>
-          <label htmlFor="notes" className="block text-sm font-medium">
+          <label htmlFor="notes" className="field-label">
             Observações (opcional)
           </label>
           <textarea
             id="notes"
             rows={3}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             {...register("notes")}
           />
         </div>
 
-        {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+        {serverError && <p className="text-sm text-red-400">{serverError}</p>}
 
         <div className="flex justify-end gap-2 pt-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-          >
+          <button type="button" onClick={onClose} className="btn-secondary">
             Cancelar
           </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
-          >
+          <button type="submit" disabled={isSubmitting} className="btn-primary">
             {isSubmitting ? "Salvando..." : "Salvar"}
           </button>
         </div>

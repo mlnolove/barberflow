@@ -70,85 +70,77 @@ export function ServiceFormModal({ service, onClose }: ServiceFormModalProps) {
     <Modal title={isEditing ? "Editar serviço" : "Novo serviço"} onClose={onClose}>
       <form className="space-y-4" onSubmit={handleSubmit((v) => mutation.mutate(v))} noValidate>
         <div>
-          <label htmlFor="name" className="block text-sm font-medium">
+          <label htmlFor="name" className="field-label">
             Nome
           </label>
           <input
             id="name"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             {...register("name")}
           />
-          {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
+          {errors.name && <p className="field-error">{errors.name.message}</p>}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="price" className="block text-sm font-medium">
+            <label htmlFor="price" className="field-label">
               Preço (R$)
             </label>
             <input
               id="price"
               placeholder="40.00"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="field-input"
               {...register("price")}
             />
-            {errors.price && <p className="mt-1 text-xs text-red-600">{errors.price.message}</p>}
+            {errors.price && <p className="field-error">{errors.price.message}</p>}
           </div>
           <div>
-            <label htmlFor="duration_minutes" className="block text-sm font-medium">
+            <label htmlFor="duration_minutes" className="field-label">
               Duração (min)
             </label>
             <input
               id="duration_minutes"
               type="number"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="field-input"
               {...register("duration_minutes")}
             />
             {errors.duration_minutes && (
-              <p className="mt-1 text-xs text-red-600">{errors.duration_minutes.message}</p>
+              <p className="field-error">{errors.duration_minutes.message}</p>
             )}
           </div>
         </div>
 
         <div>
-          <label htmlFor="category" className="block text-sm font-medium">
+          <label htmlFor="category" className="field-label">
             Categoria (opcional)
           </label>
           <input
             id="category"
             placeholder="Corte, Barba, Combo..."
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             {...register("category")}
           />
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium">
+          <label htmlFor="description" className="field-label">
             Descrição (opcional)
           </label>
           <textarea
             id="description"
             rows={3}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             {...register("description")}
           />
         </div>
 
-        {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+        {serverError && <p className="text-sm text-red-400">{serverError}</p>}
 
         <div className="flex justify-end gap-2 pt-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-          >
+          <button type="button" onClick={onClose} className="btn-secondary">
             Cancelar
           </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
-          >
+          <button type="submit" disabled={isSubmitting} className="btn-primary">
             {isSubmitting ? "Salvando..." : "Salvar"}
           </button>
         </div>

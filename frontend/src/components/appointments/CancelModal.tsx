@@ -42,26 +42,26 @@ export function CancelModal({ appointment, onClose }: CancelModalProps) {
     <Modal title={`Cancelar — ${appointment.customer.full_name}`} onClose={onClose}>
       <form className="space-y-4" onSubmit={handleSubmit((v) => mutation.mutate(v))} noValidate>
         <div>
-          <label htmlFor="reason" className="block text-sm font-medium">
+          <label htmlFor="reason" className="block text-sm font-medium text-ink-300">
             Motivo do cancelamento
           </label>
           <textarea
             id="reason"
             rows={3}
             placeholder="Ex.: Cliente solicitou cancelamento."
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="mt-1 w-full rounded-md border border-white/[0.08] bg-ink-800 px-3 py-2 text-sm text-white placeholder:text-ink-600"
             {...register("reason")}
           />
-          {errors.reason && <p className="mt-1 text-xs text-red-600">{errors.reason.message}</p>}
+          {errors.reason && <p className="mt-1 text-xs text-red-400">{errors.reason.message}</p>}
         </div>
 
-        {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+        {serverError && <p className="text-sm text-red-400">{serverError}</p>}
 
         <div className="flex justify-end gap-2 pt-2">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+            className="rounded-md border border-white/[0.08] px-4 py-2 text-sm text-ink-300 hover:bg-ink-800"
           >
             Voltar
           </button>
