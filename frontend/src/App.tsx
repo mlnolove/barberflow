@@ -39,6 +39,7 @@ import { ProductDetailPage } from "@/pages/inventory/ProductDetailPage";
 import { ProductsListPage } from "@/pages/inventory/ProductsListPage";
 import { SuppliersListPage } from "@/pages/inventory/SuppliersListPage";
 import { LoginPage } from "@/pages/LoginPage";
+import { MaisPage } from "@/pages/MaisPage";
 import { ConversationPage } from "@/pages/messages/ConversationPage";
 import { InboxPage } from "@/pages/messages/InboxPage";
 import { NotificationsPage } from "@/pages/NotificationsPage";
@@ -128,6 +129,7 @@ export function App() {
           <Route path="/estoque/:id" element={<ProductDetailPage />} />
           <Route path="/financeiro" element={<FinancialPage />} />
           <Route path="/configuracoes" element={<SettingsPage />} />
+          <Route path="/mais" element={<MaisPage />} />
         </Route>
       </Route>
 

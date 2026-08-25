@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -7,8 +6,8 @@ import {
   Clock,
   LayoutGrid,
   LogOut,
-  Menu,
   MessageCircle,
+  MoreHorizontal,
   Package,
   Scissors,
   Settings,
@@ -19,6 +18,7 @@ import {
 
 import { logout } from "@/api/auth";
 import { listNotifications } from "@/api/notifications";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 import { useAuthStore } from "@/store/authStore";
 import type { SchedulingMode } from "@/types/auth";
 
@@ -47,6 +47,18 @@ function buildNavItems(schedulingMode: SchedulingMode | undefined): NavItem[] {
     { to: "/financeiro", label: "Financeiro", icon: Wallet, permission: "finance.view" },
     { to: "/configuracoes", label: "Configurações", icon: Settings, permission: "settings.view" },
   ];
+}
+
+/** Subconjunto de 5 itens pra barra inferior do celular — espelha o padrão
+ * de 5 abas do app do cliente. Os demais (Mensagens, Serviços,
+ * Profissionais, Equipe, Estoque, Configurações) ficam dentro de "Mais". */
+function buildMobileNavItems(schedulingMode: SchedulingMode | undefined): NavItem[] {
+  const all = buildNavItems(schedulingMode);
+  const scheduleTo = schedulingMode === "QUEUE" ? "/fila" : "/agenda";
+  const keep = new Set(["/dashboard", scheduleTo, "/clientes", "/financeiro"]);
+  const items = all.filter((item) => keep.has(item.to));
+  items.push({ to: "/mais", label: "Mais", icon: MoreHorizontal });
+  return items;
 }
 
 function NotificationBell() {
@@ -79,7 +91,7 @@ export function AppLayout() {
   const tenant = useAuthStore((state) => state.tenant);
   const hasPermission = useAuthStore((state) => state.hasPermission);
   const clear = useAuthStore((state) => state.clear);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   async function handleLogout() {
     await logout().catch(() => undefined);
@@ -87,42 +99,55 @@ export function AppLayout() {
     window.location.href = "/login";
   }
 
-  const visibleItems = buildNavItems(tenant?.scheduling_mode).filter(
+  const visibleDesktopItems = buildNavItems(tenant?.scheduling_mode).filter(
+    (item) => !item.permission || hasPermission(item.permission),
+  );
+  const visibleMobileItems = buildMobileNavItems(tenant?.scheduling_mode).filter(
     (item) => !item.permission || hasPermission(item.permission),
   );
 
+  if (!isDesktop) {
+    // Celular — mesmo padrão do app do cliente: barra inferior fixa com 5
+    // abas em vez de menu lateral. Itens secundários ficam dentro de "Mais".
+    return (
+      <div className="flex min-h-screen flex-col bg-ink-950">
+        <header className="fixed inset-x-0 top-0 z-20 flex h-14 items-center justify-between border-b border-white/[0.06] bg-ink-950 px-4">
+          <p className="truncate font-serif text-sm font-semibold text-white">
+            {tenant?.name ?? "BarberFlow"}
+          </p>
+          <NotificationBell />
+        </header>
+
+        <main className="flex-1 overflow-y-auto pb-24 pt-14">
+          <Outlet />
+        </main>
+
+        <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-white/[0.06] bg-ink-950/95 pb-5 pt-2 backdrop-blur-md">
+          <div className="mx-auto flex max-w-md justify-around px-2">
+            {visibleMobileItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink key={item.to} to={item.to} className="flex flex-col items-center gap-1 px-2 py-1">
+                  {({ isActive }) => (
+                    <>
+                      <Icon size={20} className={isActive ? "text-gold" : "text-ink-600"} strokeWidth={isActive ? 2 : 1.5} />
+                      <span className={`text-[9px] font-medium ${isActive ? "text-gold" : "text-ink-600"}`}>
+                        {item.label}
+                      </span>
+                    </>
+                  )}
+                </NavLink>
+              );
+            })}
+          </div>
+        </nav>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-ink-950">
-      {/* Barra superior — só em telas de celular (abaixo do breakpoint md) */}
-      <header className="fixed inset-x-0 top-0 z-20 flex h-14 items-center justify-between border-b border-white/[0.06] bg-ink-950 px-3 md:hidden">
-        <button
-          type="button"
-          onClick={() => setDrawerOpen(true)}
-          aria-label="Abrir menu"
-          className="rounded-md p-2 text-ink-400 hover:bg-ink-900"
-        >
-          <Menu size={19} />
-        </button>
-        <p className="truncate font-serif text-sm font-semibold text-white">
-          {tenant?.name ?? "BarberFlow"}
-        </p>
-        <NotificationBell />
-      </header>
-
-      {/* Fundo escurecido atrás da gaveta de navegação (mobile) */}
-      {drawerOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/60 md:hidden"
-          onClick={() => setDrawerOpen(false)}
-          aria-hidden="true"
-        />
-      )}
-
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-white/[0.06] bg-ink-900 transition-transform duration-200 ease-out md:static md:z-auto md:w-60 md:translate-x-0 md:transition-none ${
-          drawerOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
+      <aside className="static z-auto flex w-60 flex-col border-r border-white/[0.06] bg-ink-900">
         <div className="px-6 py-5">
           {tenant?.logo_url ? (
             <img
@@ -137,13 +162,12 @@ export function AppLayout() {
         </div>
 
         <nav className="flex-1 space-y-1 px-3">
-          {visibleItems.map((item) => {
+          {visibleDesktopItems.map((item) => {
             const Icon = item.icon;
             return (
               <NavLink
                 key={item.to}
                 to={item.to}
-                onClick={() => setDrawerOpen(false)}
                 className={({ isActive }) =>
                   `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
                     isActive
@@ -172,8 +196,8 @@ export function AppLayout() {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto pt-14 md:pt-0">
-        <div className="hidden justify-end border-b border-white/[0.06] px-6 py-3 md:flex">
+      <main className="flex-1 overflow-y-auto">
+        <div className="flex justify-end border-b border-white/[0.06] px-6 py-3">
           <NotificationBell />
         </div>
         <Outlet />
