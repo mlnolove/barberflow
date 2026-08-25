@@ -8,6 +8,7 @@ export interface Customer {
   notes: string | null;
   is_active: boolean;
   created_at: string;
+  client_account_id: string | null;
 }
 
 export interface CustomerListParams {

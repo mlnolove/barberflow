@@ -49,6 +49,10 @@ class CustomerRead(BaseModel):
     notes: str | None
     is_active: bool
     created_at: datetime
+    client_account_id: uuid.UUID | None
+    """Não nulo quando o próprio cliente criou a conta pelo app e se
+    auto-agendou nesta barbearia (em vez de ter sido cadastrado pela
+    equipe) — usado só para exibir um selo no painel do dono."""
 
 
 class CustomerSummary(BaseModel):

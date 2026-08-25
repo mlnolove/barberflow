@@ -25,8 +25,12 @@ export function UpcomingAppointmentsList({ items }: UpcomingAppointmentsListProp
         <p className="px-4 py-6 text-center text-sm text-ink-600">Nenhum agendamento próximo.</p>
       ) : (
         <ul className="divide-y divide-white/[0.05]">
-          {items.map((item) => (
-            <li key={item.id} className="flex items-center gap-4 px-4 py-3 text-sm">
+          {items.map((item, index) => (
+            <li
+              key={item.id}
+              style={{ animationDelay: `${Math.min(index, 6) * 0.04}s` }}
+              className="animate-row-in flex items-center gap-4 px-4 py-3 text-sm transition-colors hover:bg-ink-800/40"
+            >
               <span className="w-12 shrink-0 font-mono font-semibold tabular-nums text-white">
                 {formatTime(item.starts_at)}
               </span>

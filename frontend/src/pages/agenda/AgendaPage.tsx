@@ -1,14 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
+import { SlidersHorizontal } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { listAppointments } from "@/api/appointments";
 import { listEmployees } from "@/api/employees";
+import { AgendaFilterSheet } from "@/components/appointments/AgendaFilterSheet";
 import { AppointmentFormModal } from "@/components/appointments/AppointmentFormModal";
 import { AppointmentRow } from "@/components/appointments/AppointmentRow";
 import { getDayRange, getMonthRange, getWeekRange, toDateInputValue } from "@/lib/datetime";
 import { useAuthStore } from "@/store/authStore";
 import { MonthView } from "@/pages/agenda/MonthView";
 import { WeekView } from "@/pages/agenda/WeekView";
+import type { AppointmentStatus } from "@/types/appointment";
 
 type ViewMode = "day" | "week" | "month";
 
@@ -17,7 +20,22 @@ export function AgendaPage() {
   const [view, setView] = useState<ViewMode>("day");
   const [date, setDate] = useState(() => toDateInputValue(new Date()));
   const [employeeId, setEmployeeId] = useState("");
+  const [statusFilter, setStatusFilter] = useState<AppointmentStatus[]>([]);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+
+  const activeFilterCount = (employeeId ? 1 : 0) + statusFilter.length;
+
+  function toggleStatusFilter(status: AppointmentStatus) {
+    setStatusFilter((current) =>
+      current.includes(status) ? current.filter((s) => s !== status) : [...current, status],
+    );
+  }
+
+  function clearFilters() {
+    setEmployeeId("");
+    setStatusFilter([]);
+  }
 
   const { data: employeesPage } = useQuery({
     queryKey: ["employees", { status: "active-for-select" }],
@@ -54,7 +72,11 @@ export function AgendaPage() {
     setDate(toDateInputValue(current));
   }
 
-  const dayAppointments = (appointments ?? []).filter(
+  const filteredAppointments = (appointments ?? []).filter(
+    (a) => statusFilter.length === 0 || statusFilter.includes(a.status),
+  );
+
+  const dayAppointments = filteredAppointments.filter(
     (a) => view !== "day" || toDateInputValue(new Date(a.starts_at)) === date,
   );
 
@@ -108,18 +130,18 @@ export function AgendaPage() {
           </button>
         </div>
 
-        <select
-          value={employeeId}
-          onChange={(e) => setEmployeeId(e.target.value)}
-          className="rounded-md border border-white/[0.08] bg-ink-900 px-3 py-1.5 text-sm text-white"
+        <button
+          onClick={() => setFiltersOpen(true)}
+          className="press-scale relative flex items-center gap-2 rounded-md border border-white/[0.08] bg-ink-900 px-3 py-1.5 text-sm text-ink-300 hover:bg-ink-800"
         >
-          <option value="">Todos os profissionais</option>
-          {employeesPage?.items.map((e) => (
-            <option key={e.id} value={e.id}>
-              {e.full_name}
-            </option>
-          ))}
-        </select>
+          <SlidersHorizontal size={14} />
+          Filtros
+          {activeFilterCount > 0 && (
+            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-semibold text-ink-950">
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
       </div>
 
       <div className="mt-6">
@@ -131,8 +153,14 @@ export function AgendaPage() {
             {dayAppointments.length === 0 && (
               <p className="text-ink-500">Nenhum agendamento neste dia.</p>
             )}
-            {dayAppointments.map((appointment) => (
-              <AppointmentRow key={appointment.id} appointment={appointment} />
+            {dayAppointments.map((appointment, index) => (
+              <div
+                key={appointment.id}
+                style={{ animationDelay: `${Math.min(index, 8) * 0.03}s` }}
+                className="animate-row-in"
+              >
+                <AppointmentRow appointment={appointment} />
+              </div>
             ))}
           </div>
         )}
@@ -140,7 +168,7 @@ export function AgendaPage() {
         {!isLoading && !isError && view === "week" && (
           <WeekView
             date={date}
-            appointments={appointments ?? []}
+            appointments={filteredAppointments}
             onSelectDay={(d) => {
               setDate(d);
               setView("day");
@@ -151,7 +179,7 @@ export function AgendaPage() {
         {!isLoading && !isError && view === "month" && (
           <MonthView
             date={date}
-            appointments={appointments ?? []}
+            appointments={filteredAppointments}
             onSelectDay={(d) => {
               setDate(d);
               setView("day");
@@ -162,6 +190,18 @@ export function AgendaPage() {
 
       {showCreateModal && (
         <AppointmentFormModal defaultDate={date} onClose={() => setShowCreateModal(false)} />
+      )}
+
+      {filtersOpen && (
+        <AgendaFilterSheet
+          employees={employeesPage?.items ?? []}
+          employeeId={employeeId}
+          onEmployeeChange={setEmployeeId}
+          statusFilter={statusFilter}
+          onToggleStatus={toggleStatusFilter}
+          onClear={clearFilters}
+          onClose={() => setFiltersOpen(false)}
+        />
       )}
     </div>
   );

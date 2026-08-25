@@ -28,7 +28,7 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['"DM Sans"', "system-ui", "sans-serif"],
+        sans: ["Switzer", "system-ui", "sans-serif"],
         serif: ["Fraunces", "Georgia", "serif"],
         mono: ['"JetBrains Mono"', "monospace"],
       },
