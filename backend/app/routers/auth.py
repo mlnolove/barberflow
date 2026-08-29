@@ -8,9 +8,10 @@ from app.core.rate_limit import rate_limit
 from app.db.session import get_db
 from app.schemas.auth import AuthResponse, LoginRequest, TenantSignupRequest
 from app.schemas.client_auth import PasswordResetConfirm, PasswordResetRequest
+from app.schemas.subscription import SubscriptionPlanRead
 from app.schemas.tenant import TenantRead
 from app.schemas.user import UserRead
-from app.services import auth_service, password_reset_service
+from app.services import auth_service, password_reset_service, subscription_service
 from app.services.password_reset_service import ResetRealm
 from app.services.permission_service import get_effective_permissions
 
@@ -49,6 +50,14 @@ def _to_auth_response(db: Session, result: auth_service.AuthResult) -> AuthRespo
         user=user_read,
         tenant=TenantRead.model_validate(result.tenant),
     )
+
+
+@router.get("/signup-plans", response_model=list[SubscriptionPlanRead])
+def signup_plans(db: Session = Depends(get_db)):
+    """Planos disponíveis para escolha na criação da barbearia — endpoint
+    público (sem login) porque é consultado antes de existir qualquer
+    conta."""
+    return subscription_service.list_plans(db)
 
 
 @router.post(

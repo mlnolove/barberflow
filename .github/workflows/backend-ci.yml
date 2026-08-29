@@ -1,0 +1,64 @@
+name: Backend CI
+
+# Roda em todo push/PR que mexe no backend — nada disso existia antes: era
+# possível subir código quebrado (lint falhando, teste quebrado) direto pra
+# main sem nenhum aviso automático.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: barberflow
+          POSTGRES_PASSWORD: barberflow_dev
+          POSTGRES_DB: barberflow_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U barberflow"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://barberflow:barberflow_dev@localhost:5432/barberflow_test
+      JWT_SECRET_KEY: ci-only-secret-not-used-anywhere-real
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: backend/requirements-dev.txt
+
+      - name: Instalar dependências
+        run: pip install -r requirements-dev.txt
+
+      - name: Ruff (lint)
+        run: ruff check .
+
+      - name: Ruff (formatação)
+        run: ruff format --check .
+
+      - name: Testes (pytest)
+        run: pytest -v

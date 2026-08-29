@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, Plus, Search, Smartphone } from "lucide-react";
+import { ChevronRight, Search, Smartphone } from "lucide-react";
 
 import { listCustomers } from "@/api/customers";
 import { CustomerFormModal } from "@/components/customers/CustomerFormModal";
+import { FabButton } from "@/components/FabButton";
 import { useAuthStore } from "@/store/authStore";
 import type { Customer } from "@/types/customer";
 
@@ -55,12 +56,6 @@ export function CustomersListPage() {
     <div className="p-6">
       <div className="flex items-center justify-between">
         <h1 className="font-serif text-xl font-semibold text-white">Clientes</h1>
-        {hasPermission("clients.create") && (
-          <button onClick={() => setShowCreateModal(true)} className="btn-primary flex items-center gap-1.5">
-            <Plus size={14} strokeWidth={2.5} />
-            Novo cliente
-          </button>
-        )}
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -171,6 +166,10 @@ export function CustomersListPage() {
             </button>
           </div>
         </div>
+      )}
+
+      {hasPermission("clients.create") && (
+        <FabButton label="Novo cliente" onClick={() => setShowCreateModal(true)} />
       )}
 
       {showCreateModal && (

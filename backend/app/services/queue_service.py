@@ -1,8 +1,9 @@
 import uuid
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
+from app.core.business_time import business_today
 from app.core.exceptions import DomainError, NotFoundError
 from app.models.financial_transaction import FinancialTransactionType
 from app.models.notification import NotificationType
@@ -41,7 +42,7 @@ def require_queue_mode(tenant) -> None:
 
 
 def _today_is_open(db: Session, tenant_id: uuid.UUID) -> bool:
-    today = date.today()
+    today = business_today()
     business_hours = BusinessHoursRepository(db, tenant_id).get_by_weekday(today.weekday())
     if business_hours is None or not business_hours.is_open:
         return False
@@ -198,7 +199,7 @@ def complete_queue_entry(
             category="Serviço",
             description=f"{entry.service.name} — {entry.customer.full_name} (fila)",
             amount=price,
-            transaction_date=date.today(),
+            transaction_date=business_today(),
             payment_method_id=payment_method.id,
         ),
         commit=False,

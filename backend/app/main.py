@@ -52,7 +52,18 @@ logging.basicConfig(
 )
 logger = logging.getLogger("barberflow")
 
-app = FastAPI(title=settings.APP_NAME, debug=settings.DEBUG)
+_is_production = settings.is_production
+
+app = FastAPI(
+    title=settings.APP_NAME,
+    debug=settings.DEBUG,
+    # Swagger/ReDoc/OpenAPI schema expõem publicamente todo o desenho da API
+    # (rotas, parâmetros, schemas) — útil em desenvolvimento, desnecessário
+    # expor pra qualquer visitante em produção.
+    docs_url=None if _is_production else "/docs",
+    redoc_url=None if _is_production else "/redoc",
+    openapi_url=None if _is_production else "/openapi.json",
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -61,6 +72,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def _security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    if _is_production:
+        response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains"
+    return response
+
 
 _STATUS_BY_ERROR: dict[type[DomainError], int] = {
     InvalidCredentialsError: 401,

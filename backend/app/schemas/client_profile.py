@@ -21,7 +21,9 @@ class ClientRead(BaseModel):
 class ClientProfileUpdate(BaseModel):
     full_name: str | None = Field(default=None, min_length=2, max_length=150)
     phone: str | None = None
-    avatar_url: str | None = Field(default=None, max_length=500)
+    # Alto o bastante para um data URI base64 (foto redimensionada no
+    # cliente pra no máximo 480px antes de enviar).
+    avatar_url: str | None = Field(default=None, max_length=2_000_000)
 
     @field_validator("phone")
     @classmethod

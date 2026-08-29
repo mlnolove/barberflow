@@ -23,6 +23,7 @@ def _signup_owner(client, email):
             "owner_full_name": "Dono",
             "owner_email": email,
             "owner_password": "Senha@123",
+            "plan_code": "monthly",
         },
     ).json()
 

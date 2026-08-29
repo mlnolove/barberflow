@@ -10,7 +10,9 @@ from app.schemas.service import ServiceRead
 
 
 class TenantPhotoCreate(BaseModel):
-    url: str = Field(min_length=1, max_length=500)
+    # Alto o bastante para um data URI base64 (foto redimensionada no
+    # cliente antes de enviar).
+    url: str = Field(min_length=1, max_length=2_000_000)
     position: int = Field(default=0, ge=0, le=1000)
 
 

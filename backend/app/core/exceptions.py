@@ -42,3 +42,8 @@ class SubscriptionRequiredError(DomainError):
             "A assinatura desta barbearia está inativa ou expirada. "
             "Regularize o pagamento em Configurações para continuar."
         )
+
+
+class InvalidPlanError(DomainError):
+    def __init__(self):
+        super().__init__("Selecione um plano válido (mensal ou anual) para criar a barbearia.")

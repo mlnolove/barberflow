@@ -1,21 +1,29 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { Lock, Mail, Scissors, User } from "lucide-react";
+import { Check, Lock, Mail, Scissors, User } from "lucide-react";
 
-import { signup } from "@/api/auth";
+import { listSignupPlans, signup } from "@/api/auth";
 import { AuthButton } from "@/components/auth/AuthButton";
 import { AuthField } from "@/components/auth/AuthField";
 import { ClientTopBar } from "@/components/client/ClientTopBar";
+import { formatMoney } from "@/lib/format";
 import { useAuthStore } from "@/store/authStore";
+
+const BILLING_INTERVAL_LABELS: Record<string, string> = {
+  MONTHLY: "mês",
+  ANNUAL: "ano",
+};
 
 const signupSchema = z.object({
   tenant_name: z.string().min(2, "Informe o nome da barbearia"),
   owner_full_name: z.string().min(2, "Informe seu nome completo"),
   owner_email: z.string().min(1, "Informe o e-mail").email("E-mail inválido"),
   owner_password: z.string().min(8, "A senha deve ter ao menos 8 caracteres"),
+  plan_code: z.string().min(1, "Escolha um plano para continuar"),
 });
 
 type SignupForm = z.infer<typeof signupSchema>;
@@ -25,11 +33,23 @@ export function SignupPage() {
   const setAuth = useAuthStore((state) => state.setAuth);
   const [serverError, setServerError] = useState<string | null>(null);
 
+  const { data: plans } = useQuery({
+    queryKey: ["signup-plans"],
+    queryFn: listSignupPlans,
+  });
+
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
-  } = useForm<SignupForm>({ resolver: zodResolver(signupSchema) });
+  } = useForm<SignupForm>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: { plan_code: "" },
+  });
+
+  const selectedPlan = watch("plan_code");
 
   async function onSubmit(values: SignupForm) {
     setServerError(null);
@@ -82,6 +102,55 @@ export function SignupPage() {
             error={errors.owner_password?.message}
             {...register("owner_password")}
           />
+
+          <input type="hidden" {...register("plan_code")} />
+          <div>
+            <p className="mb-2 text-xs font-medium text-ink-400">Escolha seu plano</p>
+            {!plans && <p className="text-xs text-ink-600">Carregando planos...</p>}
+            <div className="flex flex-col gap-2">
+              {plans?.map((plan) => {
+                const isSelected = selectedPlan === plan.code;
+                return (
+                  <button
+                    key={plan.code}
+                    type="button"
+                    onClick={() => setValue("plan_code", plan.code, { shouldValidate: true })}
+                    className={`flex items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors ${
+                      isSelected
+                        ? "border-gold bg-gold/[0.06]"
+                        : "border-white/[0.08] hover:border-white/[0.16]"
+                    }`}
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-white">{plan.name}</p>
+                      <p className="mt-0.5 font-mono text-sm text-gold">
+                        {formatMoney(plan.price)}
+                        <span className="text-ink-500">
+                          {" "}
+                          / {BILLING_INTERVAL_LABELS[plan.billing_interval] ?? plan.billing_interval}
+                        </span>
+                      </p>
+                      {plan.trial_days > 0 && (
+                        <p className="mt-0.5 text-xs text-ink-500">
+                          {plan.trial_days} dias grátis para testar
+                        </p>
+                      )}
+                    </div>
+                    <div
+                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                        isSelected ? "border-gold bg-gold text-ink-950" : "border-white/[0.16]"
+                      }`}
+                    >
+                      {isSelected && <Check size={12} strokeWidth={3} />}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            {errors.plan_code && (
+              <p className="mt-1.5 text-xs text-red-400">{errors.plan_code.message}</p>
+            )}
+          </div>
 
           {serverError && <p className="text-sm text-red-400">{serverError}</p>}
 

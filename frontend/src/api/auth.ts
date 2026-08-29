@@ -1,5 +1,6 @@
 import { api } from "@/lib/api";
 import type { AuthResponse } from "@/types/auth";
+import type { SubscriptionPlan } from "@/types/subscription";
 
 export interface LoginPayload {
   email: string;
@@ -11,6 +12,7 @@ export interface SignupPayload {
   owner_full_name: string;
   owner_email: string;
   owner_password: string;
+  plan_code: string;
 }
 
 export async function login(payload: LoginPayload): Promise<AuthResponse> {
@@ -20,6 +22,11 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
 
 export async function signup(payload: SignupPayload): Promise<AuthResponse> {
   const { data } = await api.post<AuthResponse>("/auth/signup", payload);
+  return data;
+}
+
+export async function listSignupPlans(): Promise<SubscriptionPlan[]> {
+  const { data } = await api.get<SubscriptionPlan[]>("/auth/signup-plans");
   return data;
 }
 

@@ -16,7 +16,7 @@ TEST_DATABASE_URL = os.environ.get(
     "postgresql+psycopg://barberflow:barberflow_dev@localhost:5432/barberflow_test",
 )
 
-engine = create_engine(TEST_DATABASE_URL)
+engine = create_engine(TEST_DATABASE_URL, connect_args={"options": "-c timezone=America/Sao_Paulo"})
 TestingSessionLocal = sessionmaker(bind=engine)
 
 

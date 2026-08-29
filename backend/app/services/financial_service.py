@@ -3,6 +3,7 @@ from datetime import date
 
 from sqlalchemy.orm import Session
 
+from app.core.business_time import business_today
 from app.core.exceptions import DomainError, NotFoundError
 from app.models.financial_transaction import FinancialTransaction, FinancialTransactionType
 from app.repositories.financial_transaction_repository import FinancialTransactionRepository
@@ -113,7 +114,7 @@ def void_transaction(
             category=original.category,
             description=f"Estorno: {original.description}",
             amount=original.amount,
-            transaction_date=date.today(),
+            transaction_date=business_today(),
             payment_method_id=original.payment_method_id,
             responsible_user_id=user_id,
             appointment_id=original.appointment_id,

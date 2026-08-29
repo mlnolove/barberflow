@@ -4,7 +4,7 @@ Sistema web SaaS multi-tenant para gestão de barbearias — clientes, profissio
 
 Projeto desenvolvido como portfólio de Análise e Desenvolvimento de Sistemas, priorizando arquitetura profissional, regras de negócio reais e segurança — não um CRUD genérico.
 
-> **Status atual: Fase 8 — Personalização concluída.** Fundação, Clientes, Serviços, Profissionais, Agenda, Estoque, Financeiro, Dashboard e Personalização estão implementados e testados. As demais fases (integrações, qualidade, deploy) estão no [roadmap](#roadmap) e serão implementadas incrementalmente.
+> **Status atual: além da Fase 8.** Fundação, Clientes, Serviços, Profissionais, Agenda, Estoque, Financeiro, Dashboard e Personalização (Fases 1–8) estão implementados e testados — e o projeto já foi além do roadmap original: pivotou para um **marketplace bilateral** (conta de cliente separada, busca de barbearias por proximidade, agendamento self-service, favoritos, mensagens, fila de atendimento, notificações, assinatura paga com Mercado Pago) e **o backend está publicado em produção** (Railway), com um APK Android funcional de ponta a ponta. Ver [Marketplace e produção](#marketplace-e-produção-além-do-roadmap-original) e o [roadmap](#roadmap) atualizado.
 
 ## O problema
 
@@ -91,9 +91,23 @@ Uma plataforma única por barbearia (tenant), com controle de acesso granular po
 - iOS não foi empacotado — o Capacitor suporta, mas compilar exige um Mac com Xcode, indisponível neste ambiente de desenvolvimento
 - Backend publicado no Railway (Postgres gerenciado, deploy via Docker, migrations automáticas a cada subida) especificamente para o app ter algo real para conversar — o [APK final](https://github.com/mlnolove/barberflow/releases/tag/android-debug-v1) já aponta pra lá e funciona de ponta a ponta em qualquer rede
 
+### Marketplace e produção (além do roadmap original)
+
+Depois da Fase 8, o projeto pivotou de "ferramenta de gestão para uma barbearia" para um marketplace bilateral (tipo iFood/Booksy), com um segundo domínio de autenticação completo:
+
+- **Conta de cliente** (`ClientAccount`) — totalmente separada da conta de equipe (`User`/`Tenant`): tabela própria, JWT com `type` distinto, nenhuma dependency compartilhada entre os dois domínios (um token de cliente é estruturalmente rejeitado em qualquer endpoint de staff, e vice-versa)
+- Busca de barbearias por nome, serviço, profissional e **proximidade** (haversine, sem depender de PostGIS)
+- Agendamento self-service pelo cliente, reaproveitando as mesmas regras de conflito/horário de funcionamento do agendamento feito pela equipe
+- Favoritos, mensagens (conversa cliente ↔ barbearia), fila de atendimento (modo alternativo ao agendamento por horário) e notificações
+- **Assinatura paga da barbearia** (planos mensal/anual, período de teste) com integração ao **Mercado Pago** (Checkout Pro + validação de assinatura de webhook) — sem credenciais reais configuradas, cai automaticamente num gateway sandbox que nunca cobra de verdade, então dá pra testar o fluxo inteiro sem conta no Mercado Pago
+- Criptografia em repouso (Fernet) para dados financeiros sensíveis (chave PIX/conta de recebimento)
+- **Backend publicado em produção** (Railway, Postgres gerenciado, deploy via Docker, migrations automáticas a cada subida) e um **APK Android** funcional apontando pra esse backend — ver [COMO_RODAR.md](COMO_RODAR.md)
+
+O frontend web ainda não tem um domínio público próprio (só o APK usa o backend de produção hoje).
+
 ### Planejado (ver [roadmap](#roadmap))
 
-Notificações, integração com Discord, auditoria, relatórios detalhados com filtro de período.
+Integração com Discord, provedor de e-mail real, gateway de pagamento configurado com credenciais reais, deploy do frontend web, CI/CD.
 
 ## Stack tecnológica
 
@@ -405,14 +419,28 @@ npm run dev
 
 | Variável | Descrição | Onde |
 |---|---|---|
+| `ENVIRONMENT` | `development` ou `production` — em produção, o backend recusa subir se `JWT_SECRET_KEY`/`FIELD_ENCRYPTION_KEY` ainda estiverem no valor padrão deste repositório (ver [Segurança](#segurança)) | backend |
 | `DATABASE_URL` | String de conexão PostgreSQL (driver `psycopg`) | backend |
-| `JWT_SECRET_KEY` | Segredo para assinatura dos tokens JWT | backend |
+| `JWT_SECRET_KEY` | Segredo para assinatura dos tokens JWT — **gere um valor novo em produção** | backend |
+| `FIELD_ENCRYPTION_KEY` | Chave Fernet para criptografar dados financeiros sensíveis em repouso (PIX/conta de recebimento) — **gere um valor novo em produção**, nunca reaproveite o default do código | backend |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Duração do access token | backend |
 | `REFRESH_TOKEN_EXPIRE_DAYS` | Duração do refresh token | backend |
 | `CORS_ORIGINS` | Origens permitidas (JSON array) | backend |
+| `MERCADOPAGO_ACCESS_TOKEN` / `MERCADOPAGO_WEBHOOK_SECRET` | Credenciais do Mercado Pago (opcional — sem elas, checkout roda em modo sandbox) | backend |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USERNAME` / `SMTP_PASSWORD` / `SMTP_FROM_EMAIL` | Provedor SMTP pro e-mail de redefinição de senha (opcional — sem `SMTP_HOST`, o e-mail só é registrado em log) | backend |
 | `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | Credenciais do banco (docker-compose) | infra |
 
 Nunca commitar `.env`. Use sempre `.env.example` como referência.
+
+## Segurança
+
+- Senhas com Argon2 (`passlib`); access token JWT de vida curta em memória no frontend (nunca `localStorage`); refresh token rotativo em cookie `httpOnly`.
+- Isolamento multi-tenant garantido estruturalmente (`TenantScopedRepository` sempre exige e filtra por `tenant_id`, nunca opcional) e testado automaticamente (`tests/test_multitenancy.py`).
+- Dados financeiros sensíveis (chave PIX, conta de recebimento) criptografados em repouso com Fernet.
+- Rate limiting em endpoints de autenticação/reset de senha (em memória — suficiente pra uma instância; precisaria migrar pra um backend compartilhado tipo Redis se escalar horizontalmente).
+- `/docs`, `/redoc` e `/openapi.json` só ficam expostos quando `ENVIRONMENT != production`.
+- **Em produção, o backend recusa subir** (`RuntimeError` no boot) se `JWT_SECRET_KEY` ou `FIELD_ENCRYPTION_KEY` ainda estiverem nos valores padrão deste repositório — falha visível no deploy é preferível a uma vulnerabilidade silenciosa. Confirme que ambos foram sobrescritos no ambiente de produção antes do primeiro deploy real.
+- Headers básicos de segurança (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, e `Strict-Transport-Security` em produção).
 
 ## Testes
 
@@ -431,6 +459,8 @@ Inclui testes obrigatórios de isolamento multi-tenant (`tests/test_multitenancy
 cd frontend
 npm run test
 ```
+
+**CI:** `.github/workflows/backend-ci.yml` (ruff + pytest, com Postgres de serviço) e `.github/workflows/frontend-ci.yml` (eslint + vitest + build) rodam em todo push/PR que mexe no respectivo diretório — nada garante ainda 100% de cobertura, mas código quebrado não passa mais despercebido pro `main`.
 
 ## Demonstração / Seed
 
@@ -476,9 +506,10 @@ O comando `python -m app.seed` popula:
 - [x] **Fase 6** — Financeiro: entradas/saídas, estorno, formas de pagamento, fechamento de atendimento integrado
 - [x] **Fase 7** — Dashboard: indicadores, alertas, próximos agendamentos e 6 gráficos (Recharts)
 - [x] **Fase 8** — Personalização: logo, cores, configurações de agenda e funcionamento, tema dinâmico por tenant
-- [ ] **Fase 9** — Integrações: Discord, notificações
-- [ ] **Fase 10** — Qualidade: testes ampliados, segurança, documentação, CI/CD
-- [ ] **Fase 11** — Deploy: produção, domínio, monitoramento
+- [x] **Marketplace** (fora do plano original) — conta de cliente separada, busca por proximidade, agendamento self-service, favoritos, mensagens, fila, notificações, assinatura paga (Mercado Pago) — ver [seção acima](#marketplace-e-produção-além-do-roadmap-original)
+- [ ] **Fase 9** — Integrações: Discord (notificações já implementadas, ver acima)
+- [~] **Fase 10** — Qualidade: CI rodando lint/testes a cada push (backend e frontend) implementado; cobertura de teste do frontend ainda é baixa (a maioria das telas só tem teste de "fumaça"); hardening de segurança básico feito (segredos de produção não podem ficar no valor padrão de dev, `/docs` desabilitado fora de desenvolvimento, headers de segurança) — auditoria completa e testes de carga ainda não
+- [~] **Fase 11** — Deploy: backend já em produção (Railway) com migrations automáticas; falta domínio próprio, deploy do frontend web, monitoramento/observabilidade (sem Sentry ou equivalente ainda) e confirmar que os segredos de produção (`JWT_SECRET_KEY`, `FIELD_ENCRYPTION_KEY`) foram de fato trocados dos valores padrão deste repositório
 
 ## Estrutura do projeto
 

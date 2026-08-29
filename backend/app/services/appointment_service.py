@@ -1,9 +1,10 @@
 import uuid
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 from sqlalchemy.orm import Session
 
+from app.core.business_time import business_today
 from app.core.exceptions import ConflictError, DomainError, NotFoundError
 from app.models.appointment import Appointment, AppointmentStatus, AppointmentStatusHistory
 from app.models.employee import Employee
@@ -376,7 +377,7 @@ def complete_appointment(
             category="Serviço",
             description=f"{appointment.service.name} — {appointment.customer.full_name}",
             amount=appointment.price,
-            transaction_date=date.today(),
+            transaction_date=business_today(),
             payment_method_id=payment_method.id,
         ),
         appointment_id=appointment.id,
@@ -409,7 +410,7 @@ def complete_appointment(
                 category="Produto",
                 description=f"Produtos vendidos — {appointment.customer.full_name}",
                 amount=products_total,
-                transaction_date=date.today(),
+                transaction_date=business_today(),
                 payment_method_id=payment_method.id,
             ),
             appointment_id=appointment.id,

@@ -3,6 +3,7 @@ from datetime import UTC, date, datetime, timedelta
 
 from sqlalchemy.orm import Session
 
+from app.core.business_time import BUSINESS_TZ, business_now, business_today
 from app.repositories.dashboard_repository import DashboardRepository
 from app.schemas.dashboard import (
     CountPoint,
@@ -38,10 +39,17 @@ def _next_month_start(year: int, month: int) -> date:
 def get_summary(db: Session, tenant_id: uuid.UUID) -> DashboardSummary:
     repo = DashboardRepository(db, tenant_id)
     now = datetime.now(UTC)
-    today = now.date()
+    # "hoje" é o dia local do negócio (ver core/business_time), não o dia em
+    # UTC — combinado com o fuso da sessão do Postgres fixado em
+    # db/session.py, isso mantém `today` e as consultas com `func.date(...)`
+    # concordando entre si.
+    today = business_today()
     month_start = date(today.year, today.month, 1)
     next_month_start = _next_month_start(today.year, today.month)
-    recent_start = now - timedelta(days=_RECENT_WINDOW_DAYS)
+    # `business_now()`, não `now` (UTC) — mesmo raciocínio de `today` acima:
+    # os pontos de corte precisam concordar com o fuso de negócio, senão
+    # KPIs do mesmo dashboard divergem entre si perto da virada UTC.
+    recent_start = business_now() - timedelta(days=_RECENT_WINDOW_DAYS)
 
     today_summary = financial_service.get_summary(db, tenant_id, date_from=today, date_to=today)
     month_summary = financial_service.get_summary(
@@ -54,13 +62,13 @@ def get_summary(db: Session, tenant_id: uuid.UUID) -> DashboardSummary:
         expenses_month=month_summary.total_expense,
         appointments_today=repo.count_appointments_on_day(today),
         completed_appointments_month=repo.count_completed_in_range(
-            datetime.combine(month_start, datetime.min.time(), tzinfo=UTC),
-            datetime.combine(next_month_start, datetime.min.time(), tzinfo=UTC),
+            datetime.combine(month_start, datetime.min.time(), tzinfo=BUSINESS_TZ),
+            datetime.combine(next_month_start, datetime.min.time(), tzinfo=BUSINESS_TZ),
         ),
         average_ticket=round(
             repo.average_ticket(
-                datetime.combine(month_start, datetime.min.time(), tzinfo=UTC),
-                datetime.combine(next_month_start, datetime.min.time(), tzinfo=UTC),
+                datetime.combine(month_start, datetime.min.time(), tzinfo=BUSINESS_TZ),
+                datetime.combine(next_month_start, datetime.min.time(), tzinfo=BUSINESS_TZ),
             ),
             2,
         ),
@@ -119,7 +127,7 @@ def get_summary(db: Session, tenant_id: uuid.UUID) -> DashboardSummary:
         for name, total in repo.payment_method_breakdown(recent_start.date(), today)
     ]
 
-    growth_start = datetime.combine(monthly_start, datetime.min.time(), tzinfo=UTC)
+    growth_start = datetime.combine(monthly_start, datetime.min.time(), tzinfo=BUSINESS_TZ)
     growth_totals = {(y, m): count for y, m, count in repo.customer_growth(growth_start, now)}
     customer_growth = []
     for i in range(_MONTHLY_CHART_MONTHS):

@@ -24,6 +24,7 @@ def _signup_owner(client, email="dono@config.com"):
             "owner_full_name": "Dono",
             "owner_email": email,
             "owner_password": "Senha@123",
+            "plan_code": "monthly",
         },
     )
     return response.json()
@@ -165,7 +166,14 @@ def test_min_advance_minutes_enforced_on_appointment_creation(client):
     customer = _create_customer(client, token)
     service = _create_service(client, token)
     employee = _create_employee(client, token, [service["id"]])
-    starts_at = _next_weekday(0, 10)
+    # "amanhã" (não "a próxima segunda", que pode ser até 7 dias no futuro
+    # dependendo de que dia o teste roda — não violaria uma antecedência
+    # mínima de 3 dias em boa parte da semana) garante estar sempre dentro
+    # da janela de 3 dias bloqueada por `min_advance_minutes` acima,
+    # independente do dia em que a suíte é executada.
+    starts_at = (datetime.now(TZ) + timedelta(days=1)).replace(
+        hour=10, minute=0, second=0, microsecond=0
+    )
 
     response = client.post(
         "/api/appointments",

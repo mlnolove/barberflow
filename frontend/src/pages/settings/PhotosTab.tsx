@@ -1,12 +1,18 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { X } from "lucide-react";
+import { ImagePlus, X } from "lucide-react";
 
 import { addTenantPhoto, deleteTenantPhoto, listTenantPhotos } from "@/api/settings";
+import { fileToResizedDataUrl } from "@/lib/imageResize";
+
+const GALLERY_MAX_DIMENSION = 960;
+const MAX_SOURCE_BYTES = 12 * 1024 * 1024;
 
 export function PhotosTab({ canEdit }: { canEdit: boolean }) {
   const queryClient = useQueryClient();
-  const [url, setUrl] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["settings-photos"],
@@ -14,11 +20,9 @@ export function PhotosTab({ canEdit }: { canEdit: boolean }) {
   });
 
   const addMutation = useMutation({
-    mutationFn: () => addTenantPhoto(url, data?.length ?? 0),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["settings-photos"] });
-      setUrl("");
-    },
+    mutationFn: ({ url, position }: { url: string; position: number }) =>
+      addTenantPhoto(url, position),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["settings-photos"] }),
   });
 
   const deleteMutation = useMutation({
@@ -26,31 +30,64 @@ export function PhotosTab({ canEdit }: { canEdit: boolean }) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["settings-photos"] }),
   });
 
+  async function handleFilesSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (files.length === 0) return;
+    setUploadError(null);
+    setUploading(true);
+    // Contador local em vez de `data?.length` — a invalidação da query é
+    // assíncrona e não é aguardada entre chamadas, então o cache não
+    // reflete os uploads anteriores deste mesmo lote a tempo.
+    let nextPosition = data?.length ?? 0;
+    try {
+      for (const file of files) {
+        if (!file.type.startsWith("image/")) {
+          setUploadError("Alguns arquivos foram ignorados por não serem imagens.");
+          continue;
+        }
+        if (file.size > MAX_SOURCE_BYTES) {
+          setUploadError("Alguma imagem era grande demais e foi ignorada.");
+          continue;
+        }
+        const resized = await fileToResizedDataUrl(file, GALLERY_MAX_DIMENSION);
+        await addMutation.mutateAsync({ url: resized, position: nextPosition });
+        nextPosition += 1;
+      }
+    } catch {
+      setUploadError("Não foi possível enviar uma das fotos. Tente novamente.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
   return (
     <div className="max-w-xl">
       <p className="mb-4 text-sm text-ink-500">
-        Fotos exibidas no perfil público da barbearia pro cliente. Cole o link de uma imagem já
-        hospedada (sem upload de arquivo por aqui ainda).
+        Fotos exibidas no perfil público da barbearia pro cliente.
       </p>
 
       {canEdit && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (url.trim()) addMutation.mutate();
-          }}
-          className="mb-4 flex gap-2"
-        >
+        <div className="mb-4">
           <input
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://..."
-            className="field-input mt-0 flex-1"
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleFilesSelected}
           />
-          <button type="submit" disabled={addMutation.isPending || !url.trim()} className="btn-primary">
-            {addMutation.isPending ? "Adicionando..." : "Adicionar"}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="btn-primary flex items-center gap-1.5 disabled:opacity-60"
+          >
+            <ImagePlus size={14} strokeWidth={2.5} />
+            {uploading ? "Enviando..." : "Adicionar fotos"}
           </button>
-        </form>
+          {uploadError && <p className="field-error">{uploadError}</p>}
+        </div>
       )}
 
       {isLoading && <p className="text-sm text-ink-500">Carregando...</p>}

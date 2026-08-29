@@ -1,5 +1,7 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { NavLink, useLocation, useNavigate, useOutlet } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "motion/react";
 import {
   Bell,
   CalendarDays,
@@ -18,6 +20,7 @@ import {
 
 import { logout } from "@/api/auth";
 import { listNotifications } from "@/api/notifications";
+import { navOrderIndex } from "@/lib/navOrderIndex";
 import { useMediaQuery } from "@/lib/useMediaQuery";
 import { useAuthStore } from "@/store/authStore";
 import type { SchedulingMode } from "@/types/auth";
@@ -59,6 +62,72 @@ function buildMobileNavItems(schedulingMode: SchedulingMode | undefined): NavIte
   const items = all.filter((item) => keep.has(item.to));
   items.push({ to: "/mais", label: "Mais", icon: MoreHorizontal });
   return items;
+}
+
+const slideVariants = {
+  enter: (direction: number) => ({ x: direction >= 0 ? 18 : -18, opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit: (direction: number) => ({ x: direction >= 0 ? -18 : 18, opacity: 0 }),
+};
+
+/** Troca o conteúdo da rota com um slide horizontal cuja direção reflete a
+ * posição da aba clicada na navegação: uma aba "à frente" (mais à direita
+ * na barra inferior / mais abaixo na sidebar) entra da direita, uma aba
+ * "anterior" entra da esquerda — como o usuário pediu. */
+function AnimatedOutlet({ order }: { order: string[] }) {
+  const location = useLocation();
+  const outlet = useOutlet();
+  const [prevPath, setPrevPath] = useState(location.pathname);
+  const [direction, setDirection] = useState(1);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  if (location.pathname !== prevPath) {
+    const nextIndex = navOrderIndex(location.pathname, order);
+    const currentIndex = navOrderIndex(prevPath, order);
+    // Uma rota fora da barra de navegação (ex.: uma página aberta a partir
+    // de "Mais" no celular) não tem índice — trata como "avançando", único
+    // valor com sentido quando não há uma posição real pra comparar.
+    const isOutOfNav = nextIndex === -1 || currentIndex === -1;
+    setDirection(isOutOfNav || nextIndex >= currentIndex ? 1 : -1);
+    setPrevPath(location.pathname);
+  }
+
+  // `onAnimationComplete` (abaixo) não dispara quando `initial={false}` faz
+  // o AnimatePresence pular a animação de entrada — é exatamente o caso da
+  // primeiríssima página carregada (login, link direto, F5). Sem isto, o
+  // transform residual do Framer Motion nunca seria limpo nessa primeira
+  // renderização, prendendo qualquer modal `fixed` dentro dela ao box da
+  // página em vez do viewport. Roda só uma vez, no mount.
+  useEffect(() => {
+    if (containerRef.current) containerRef.current.style.transform = "none";
+  }, []);
+
+  return (
+    <AnimatePresence mode="wait" initial={false} custom={direction}>
+      <motion.div
+        ref={containerRef}
+        key={location.pathname}
+        custom={direction}
+        variants={slideVariants}
+        initial="enter"
+        animate="center"
+        exit="exit"
+        transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+        onAnimationComplete={(definition) => {
+          // O slide usa `transform`, e QUALQUER valor de transform (mesmo
+          // translateX(0)) vira o novo container de posicionamento pra
+          // filhos `fixed` (modais, sheets) — sem limpar isso depois que a
+          // página assenta, todo `fixed` dentro dela fica preso ao box da
+          // página em vez do viewport.
+          if (definition === "center" && containerRef.current) {
+            containerRef.current.style.transform = "none";
+          }
+        }}
+      >
+        {outlet}
+      </motion.div>
+    </AnimatePresence>
+  );
 }
 
 function NotificationBell() {
@@ -119,7 +188,7 @@ export function AppLayout() {
         </header>
 
         <main className="flex-1 overflow-y-auto pb-24 pt-14">
-          <Outlet />
+          <AnimatedOutlet order={visibleMobileItems.map((item) => item.to)} />
         </main>
 
         <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-white/[0.06] bg-ink-950/95 pb-5 pt-2 backdrop-blur-md">
@@ -200,7 +269,7 @@ export function AppLayout() {
         <div className="flex justify-end border-b border-white/[0.06] px-6 py-3">
           <NotificationBell />
         </div>
-        <Outlet />
+        <AnimatedOutlet order={visibleDesktopItems.map((item) => item.to)} />
       </main>
     </div>
   );

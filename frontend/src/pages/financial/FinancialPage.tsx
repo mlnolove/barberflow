@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { ArrowDownLeft, ArrowUpRight, Plus } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
 import { getSummary, listPaymentMethods, listTransactions, setPaymentMethodActive } from "@/api/financial";
+import { DatePickerButton } from "@/components/DatePickerButton";
+import { FabButton } from "@/components/FabButton";
 import { TransactionFormModal } from "@/components/financial/TransactionFormModal";
 import { VoidTransactionModal } from "@/components/financial/VoidTransactionModal";
 import { useAuthStore } from "@/store/authStore";
@@ -109,12 +111,6 @@ export function FinancialPage() {
     <div className="p-6">
       <div className="flex items-center justify-between">
         <h1 className="font-serif text-xl font-semibold text-white">Financeiro</h1>
-        {hasPermission("finance.create") && (
-          <button onClick={() => setShowCreateModal(true)} className="btn-primary flex items-center gap-1.5">
-            <Plus size={14} strokeWidth={2.5} />
-            Novo lançamento
-          </button>
-        )}
       </div>
 
       {/* Hero: anel de margem + resumo entradas/saídas/saldo */}
@@ -190,26 +186,24 @@ export function FinancialPage() {
             </button>
           ))}
         </div>
-        <input
-          type="date"
+        <DatePickerButton
           value={dateFrom}
-          onChange={(e) => {
-            setDateFrom(e.target.value);
+          onChange={(value) => {
+            setDateFrom(value);
             setPreset("custom");
             setPage(1);
           }}
-          className="rounded-md border border-white/[0.08] bg-ink-900 px-3 py-2 text-sm text-white"
+          label="Data inicial"
         />
         <span className="text-sm text-ink-600">até</span>
-        <input
-          type="date"
+        <DatePickerButton
           value={dateTo}
-          onChange={(e) => {
-            setDateTo(e.target.value);
+          onChange={(value) => {
+            setDateTo(value);
             setPreset("custom");
             setPage(1);
           }}
-          className="rounded-md border border-white/[0.08] bg-ink-900 px-3 py-2 text-sm text-white"
+          label="Data final"
         />
         <select
           value={type}
@@ -370,6 +364,10 @@ export function FinancialPage() {
             ))}
           </div>
         </div>
+      )}
+
+      {hasPermission("finance.create") && (
+        <FabButton label="Novo lançamento" onClick={() => setShowCreateModal(true)} />
       )}
 
       {showCreateModal && <TransactionFormModal onClose={() => setShowCreateModal(false)} />}

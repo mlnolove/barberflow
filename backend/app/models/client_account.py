@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Numeric, String
+from sqlalchemy import DateTime, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -20,7 +20,10 @@ class ClientAccount(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
     email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
-    avatar_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    # Text (não String) porque a foto de perfil escolhida no celular vira um
+    # data URI base64 salvo direto aqui — o app ainda não tem um serviço de
+    # upload de arquivos separado.
+    avatar_url: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Última localização informada pelo cliente, só preenchida mediante
     # opt-in explícito no app (endpoint dedicado de localização) — nunca

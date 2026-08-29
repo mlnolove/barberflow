@@ -12,6 +12,7 @@ def _signup_owner(client, email="dono@teste.com"):
             "owner_full_name": "Dono Teste",
             "owner_email": email,
             "owner_password": "Senha@123",
+            "plan_code": "monthly",
         },
     )
 

@@ -110,11 +110,14 @@ Configure estas variáveis de ambiente no serviço escolhido:
 
 | Variável | Valor em produção |
 |---|---|
-| `ENVIRONMENT` | `production` |
+| `ENVIRONMENT` | `production` — **atenção**: com isso, o backend recusa subir se `JWT_SECRET_KEY` ou `FIELD_ENCRYPTION_KEY` ainda estiverem no valor padrão do código (proteção contra subir em produção com segredo público) |
 | `DEBUG` | `false` |
 | `DATABASE_URL` | a string do banco gerenciado (item a) |
 | `JWT_SECRET_KEY` | **gere um novo valor aleatório** — nunca reaproveite o de desenvolvimento |
+| `FIELD_ENCRYPTION_KEY` | **gere um novo valor** com `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"` — protege dados financeiros sensíveis (chave PIX) em repouso; o valor padrão do código é público, não serve pra produção |
 | `CORS_ORIGINS` | o domínio do seu frontend, ex.: `["https://seusite.com"]` |
+| `MERCADOPAGO_ACCESS_TOKEN` / `MERCADOPAGO_WEBHOOK_SECRET` | opcional — sem isso, assinaturas usam um gateway sandbox que nunca cobra de verdade |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USERNAME` / `SMTP_PASSWORD` / `SMTP_FROM_EMAIL` | opcional — sem `SMTP_HOST`, o e-mail de redefinição de senha só é registrado em log, o usuário nunca recebe de verdade |
 
 Depois do primeiro deploy, rode as migrations uma vez (a maioria dessas plataformas tem um "console"/"shell" pra isso):
 

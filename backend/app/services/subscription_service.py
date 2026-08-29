@@ -15,8 +15,6 @@ from app.repositories.subscription_repository import SubscriptionRepository
 from app.schemas.subscription import SubscriptionPlanRead, SubscriptionRead
 from app.services import audit_service
 
-DEFAULT_PLAN_CODE = "monthly"
-
 _USABLE_STATUSES = {SubscriptionStatus.TRIAL, SubscriptionStatus.ACTIVE}
 _PERIOD_BY_INTERVAL = {
     BillingInterval.MONTHLY: timedelta(days=30),
@@ -57,15 +55,14 @@ def list_plans(db: Session) -> list[SubscriptionPlan]:
 
 
 def provision_trial_subscription(
-    db: Session, tenant_id: uuid.UUID, plan_code: str = DEFAULT_PLAN_CODE
+    db: Session, tenant_id: uuid.UUID, plan: SubscriptionPlan
 ) -> Subscription:
     """Chamado no signup do proprietário — toda barbearia nasce com um
     período de teste (seção 11: "período de teste, se futuramente
-    utilizado"), sem exigir cartão nem gateway configurado."""
-    plan = SubscriptionPlanRepository(db).get_by_code(plan_code)
-    if plan is None:
-        raise RuntimeError(f"Plano '{plan_code}' não encontrado. Rode o seed inicial do banco.")
-
+    utilizado"), sem exigir cartão nem gateway configurado. Recebe o plano
+    já buscado (e validado) pelo chamador, em vez de buscar de novo pelo
+    código — `auth_service.signup_tenant` já precisa fazer essa consulta
+    pra validar o `plan_code` antes de criar o tenant."""
     now = datetime.now(UTC)
     subscription = Subscription(
         plan_id=plan.id,

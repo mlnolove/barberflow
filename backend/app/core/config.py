@@ -44,10 +44,52 @@ class Settings(BaseSettings):
     MERCADOPAGO_ACCESS_TOKEN: str | None = None
     MERCADOPAGO_WEBHOOK_SECRET: str | None = None
 
+    # E-mail transacional (reset de senha). Sem SMTP_HOST configurado, o
+    # backend usa um backend "de log" (não envia de verdade) — ver
+    # core/email.py. Funciona com qualquer provedor SMTP (Gmail, Brevo,
+    # SendGrid, Amazon SES, um servidor próprio etc.).
+    SMTP_HOST: str | None = None
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: str | None = None
+    SMTP_PASSWORD: str | None = None
+    SMTP_FROM_EMAIL: str = "no-reply@barberflow.app"
+    SMTP_USE_TLS: bool = True
+
+    @property
+    def is_production(self) -> bool:
+        # Normalizado — algumas plataformas de deploy gravam "Production"
+        # em vez de "production", e uma comparação exata deixaria passar
+        # segredos padrão e endpoints de debug expostos em produção sem
+        # nenhum aviso.
+        return self.ENVIRONMENT.strip().lower() == "production"
+
+
+_INSECURE_PRODUCTION_DEFAULTS = {
+    "JWT_SECRET_KEY": "change-me-in-env",
+    # A chave Fernet default em código (não a string-placeholder do
+    # .env.example) — se ninguém sobrescrever FIELD_ENCRYPTION_KEY, os dados
+    # "criptografados" no banco ficam protegidos por um segredo público,
+    # visível em qualquer clone deste repositório.
+    "FIELD_ENCRYPTION_KEY": "8ZqPh_XEYxTGPPhmM760_HQi7KpkJk4MEpaO2AoZ6jI=",
+}
+
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    loaded = Settings()
+    if loaded.is_production:
+        insecure = [
+            name
+            for name, default in _INSECURE_PRODUCTION_DEFAULTS.items()
+            if getattr(loaded, name) == default
+        ]
+        if insecure:
+            raise RuntimeError(
+                "Variáveis de ambiente ainda no valor padrão de desenvolvimento em "
+                f"produção: {', '.join(insecure)}. Defina valores próprios (nunca "
+                "reaproveite os defaults deste código) antes de subir o serviço."
+            )
+    return loaded
 
 
 settings = get_settings()

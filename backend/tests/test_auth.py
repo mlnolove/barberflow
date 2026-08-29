@@ -6,6 +6,7 @@ def _signup(client, tenant_name="Barbearia Teste", email="dono@teste.com", passw
             "owner_full_name": "Dono Teste",
             "owner_email": email,
             "owner_password": password,
+            "plan_code": "monthly",
         },
     )
 
@@ -19,6 +20,58 @@ def test_signup_creates_tenant_and_owner_with_full_permissions(client):
     assert "finance.delete" in data["user"]["permissions"]
     assert data["tenant"]["slug"] == "barbearia-teste"
     assert "refresh_token" in response.cookies
+
+
+def test_signup_without_plan_fails(client):
+    response = client.post(
+        "/api/auth/signup",
+        json={
+            "tenant_name": "Barbearia Sem Plano",
+            "owner_full_name": "Dono Teste",
+            "owner_email": "semplano@teste.com",
+            "owner_password": "Senha@123",
+        },
+    )
+    assert response.status_code == 422
+
+
+def test_signup_with_invalid_plan_fails(client):
+    response = client.post(
+        "/api/auth/signup",
+        json={
+            "tenant_name": "Barbearia Plano Invalido",
+            "owner_full_name": "Dono Teste",
+            "owner_email": "planoinvalido@teste.com",
+            "owner_password": "Senha@123",
+            "plan_code": "nao-existe",
+        },
+    )
+    assert response.status_code == 400
+
+
+def test_signup_creates_subscription_on_chosen_plan(client):
+    response = client.post(
+        "/api/auth/signup",
+        json={
+            "tenant_name": "Barbearia Anual",
+            "owner_full_name": "Dono Teste",
+            "owner_email": "anual@teste.com",
+            "owner_password": "Senha@123",
+            "plan_code": "annual",
+        },
+    )
+    assert response.status_code == 201
+    token = response.json()["access_token"]
+    subscription = client.get("/api/subscription", headers={"Authorization": f"Bearer {token}"})
+    assert subscription.status_code == 200
+    assert subscription.json()["plan"]["code"] == "annual"
+
+
+def test_signup_plans_endpoint_is_public(client):
+    response = client.get("/api/auth/signup-plans")
+    assert response.status_code == 200
+    codes = {plan["code"] for plan in response.json()}
+    assert {"monthly", "annual"} <= codes
 
 
 def test_signup_with_duplicate_email_fails(client):

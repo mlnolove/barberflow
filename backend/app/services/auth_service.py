@@ -9,6 +9,7 @@ from app.core.exceptions import (
     EmailAlreadyExistsError,
     InvalidCredentialsError,
     InvalidOrExpiredTokenError,
+    InvalidPlanError,
 )
 from app.core.security import (
     create_access_token,
@@ -22,6 +23,7 @@ from app.models.tenant import Tenant
 from app.models.user import User
 from app.repositories.refresh_token_repository import RefreshTokenRepository
 from app.repositories.role_repository import RoleRepository
+from app.repositories.subscription_plan_repository import SubscriptionPlanRepository
 from app.repositories.tenant_repository import TenantRepository
 from app.repositories.user_repository import UserRepository, find_user_by_email_global
 from app.schemas.auth import LoginRequest, TenantSignupRequest
@@ -61,6 +63,10 @@ def signup_tenant(db: Session, payload: TenantSignupRequest) -> AuthResult:
     if find_user_by_email_global(db, payload.owner_email) is not None:
         raise EmailAlreadyExistsError()
 
+    plan = SubscriptionPlanRepository(db).get_by_code(payload.plan_code)
+    if plan is None or not plan.is_active:
+        raise InvalidPlanError()
+
     tenant_repo = TenantRepository(db)
     role_repo = RoleRepository(db)
 
@@ -68,7 +74,7 @@ def signup_tenant(db: Session, payload: TenantSignupRequest) -> AuthResult:
     tenant = tenant_repo.add(Tenant(name=payload.tenant_name, slug=slug))
     seed_default_business_hours(db, tenant.id)
     seed_default_payment_methods(db, tenant.id)
-    provision_trial_subscription(db, tenant.id)
+    provision_trial_subscription(db, tenant.id, plan)
 
     owner_role = role_repo.get_by_code("OWNER")
     if owner_role is None:

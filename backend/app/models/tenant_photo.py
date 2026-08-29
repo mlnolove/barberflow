@@ -1,4 +1,4 @@
-from sqlalchemy import SmallInteger, String
+from sqlalchemy import SmallInteger, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -11,5 +11,7 @@ class TenantPhoto(UUIDPKMixin, TimestampMixin, TenantScopedMixin, Base):
 
     __tablename__ = "tenant_photos"
 
-    url: Mapped[str] = mapped_column(String(500), nullable=False)
+    # Text (não String) porque a foto escolhida no celular vira um data URI
+    # base64 salvo direto aqui — sem serviço de upload de arquivos separado.
+    url: Mapped[str] = mapped_column(Text, nullable=False)
     position: Mapped[int] = mapped_column(SmallInteger, default=0, nullable=False)

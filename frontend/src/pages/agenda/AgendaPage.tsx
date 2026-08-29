@@ -7,6 +7,8 @@ import { listEmployees } from "@/api/employees";
 import { AgendaFilterSheet } from "@/components/appointments/AgendaFilterSheet";
 import { AppointmentFormModal } from "@/components/appointments/AppointmentFormModal";
 import { AppointmentRow } from "@/components/appointments/AppointmentRow";
+import { DatePickerButton } from "@/components/DatePickerButton";
+import { FabButton } from "@/components/FabButton";
 import { getDayRange, getMonthRange, getWeekRange, toDateInputValue } from "@/lib/datetime";
 import { useAuthStore } from "@/store/authStore";
 import { MonthView } from "@/pages/agenda/MonthView";
@@ -84,23 +86,15 @@ export function AgendaPage() {
     <div className="p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-serif text-xl font-semibold text-white">Agenda</h1>
-        {hasPermission("appointments.create") && (
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="rounded-md bg-gold px-4 py-2 text-sm font-medium text-ink-950 hover:opacity-90"
-          >
-            Novo agendamento
-          </button>
-        )}
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        <div className="flex rounded-md border border-white/[0.08] text-sm">
+        <div className="flex overflow-hidden rounded-full border border-white/[0.08] text-sm">
           {(["day", "week", "month"] as ViewMode[]).map((mode) => (
             <button
               key={mode}
               onClick={() => setView(mode)}
-              className={`px-3 py-1.5 ${
+              className={`px-3.5 py-1.5 ${
                 view === mode ? "bg-gold text-ink-950" : "text-ink-300 hover:bg-ink-800"
               }`}
             >
@@ -109,22 +103,19 @@ export function AgendaPage() {
           ))}
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           <button
             onClick={() => shiftByView(-1)}
-            className="rounded-md border border-white/[0.08] px-2 py-1.5 text-sm text-ink-300 hover:bg-ink-800"
+            aria-label="Período anterior"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.08] text-sm text-ink-300 hover:bg-ink-800"
           >
             ←
           </button>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="rounded-md border border-white/[0.08] bg-ink-900 px-3 py-1.5 text-sm text-white"
-          />
+          <DatePickerButton value={date} onChange={setDate} label="Escolher data" />
           <button
             onClick={() => shiftByView(1)}
-            className="rounded-md border border-white/[0.08] px-2 py-1.5 text-sm text-ink-300 hover:bg-ink-800"
+            aria-label="Próximo período"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.08] text-sm text-ink-300 hover:bg-ink-800"
           >
             →
           </button>
@@ -132,12 +123,13 @@ export function AgendaPage() {
 
         <button
           onClick={() => setFiltersOpen(true)}
-          className="press-scale relative flex items-center gap-2 rounded-md border border-white/[0.08] bg-ink-900 px-3 py-1.5 text-sm text-ink-300 hover:bg-ink-800"
+          aria-label="Filtros"
+          title="Filtros"
+          className="press-scale relative flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.08] bg-ink-900 text-ink-300 hover:bg-ink-800"
         >
-          <SlidersHorizontal size={14} />
-          Filtros
+          <SlidersHorizontal size={15} />
           {activeFilterCount > 0 && (
-            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-semibold text-ink-950">
+            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-semibold text-ink-950">
               {activeFilterCount}
             </span>
           )}
@@ -187,6 +179,10 @@ export function AgendaPage() {
           />
         )}
       </div>
+
+      {hasPermission("appointments.create") && (
+        <FabButton label="Novo agendamento" onClick={() => setShowCreateModal(true)} />
+      )}
 
       {showCreateModal && (
         <AppointmentFormModal defaultDate={date} onClose={() => setShowCreateModal(false)} />

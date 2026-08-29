@@ -2,10 +2,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { MapPin } from "lucide-react";
+import { MapPin, Search } from "lucide-react";
 import { z } from "zod";
 
 import { updateTenantSettings } from "@/api/settings";
+import { AddressMap } from "@/components/settings/AddressMap";
+import { geocodeAddress } from "@/lib/geocode";
 import type { Tenant } from "@/types/auth";
 import { useAuthStore } from "@/store/authStore";
 
@@ -33,10 +35,15 @@ export function InfoTab({ tenant, canEdit }: InfoTabProps) {
   const [justSaved, setJustSaved] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
 
+  const [geocoding, setGeocoding] = useState(false);
+  const [geocodeError, setGeocodeError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
     setValue,
+    watch,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<InfoFormValues>({
     resolver: zodResolver(infoSchema),
@@ -51,6 +58,30 @@ export function InfoTab({ tenant, canEdit }: InfoTabProps) {
       longitude: tenant.longitude ?? "",
     },
   });
+
+  async function markAddressOnMap() {
+    const { address, city } = getValues();
+    const query = [address, city].filter(Boolean).join(", ");
+    if (!query.trim()) {
+      setGeocodeError("Preencha o endereço (e cidade) antes de marcar no mapa.");
+      return;
+    }
+    setGeocodeError(null);
+    setGeocoding(true);
+    try {
+      const result = await geocodeAddress(query);
+      if (!result) {
+        setGeocodeError("Endereço não encontrado. Tente ajustar o texto ou marque direto no mapa.");
+        return;
+      }
+      setValue("latitude", result.lat.toFixed(6), { shouldDirty: true });
+      setValue("longitude", result.lng.toFixed(6), { shouldDirty: true });
+    } catch {
+      setGeocodeError("Não foi possível buscar esse endereço agora.");
+    } finally {
+      setGeocoding(false);
+    }
+  }
 
   function useCurrentLocation() {
     setGeoError(null);
@@ -153,9 +184,22 @@ export function InfoTab({ tenant, canEdit }: InfoTabProps) {
       </div>
 
       <div>
-        <label htmlFor="address" className="field-label">
-          Endereço
-        </label>
+        <div className="flex items-center justify-between">
+          <label htmlFor="address" className="field-label">
+            Endereço
+          </label>
+          {canEdit && (
+            <button
+              type="button"
+              onClick={markAddressOnMap}
+              disabled={geocoding}
+              className="flex items-center gap-1 text-xs text-gold disabled:opacity-60"
+            >
+              <Search size={11} />
+              {geocoding ? "Buscando..." : "Marcar no mapa"}
+            </button>
+          )}
+        </div>
         <input
           id="address"
           disabled={!canEdit}
@@ -163,6 +207,7 @@ export function InfoTab({ tenant, canEdit }: InfoTabProps) {
           className="field-input disabled:opacity-60"
           {...register("address")}
         />
+        {geocodeError && <p className="field-error">{geocodeError}</p>}
       </div>
 
       <div>
@@ -191,7 +236,21 @@ export function InfoTab({ tenant, canEdit }: InfoTabProps) {
             </button>
           )}
         </div>
-        <div className="mt-1 grid grid-cols-2 gap-3">
+        <div className="mt-2">
+          <AddressMap
+            latitude={watch("latitude") ? Number(watch("latitude")) : null}
+            longitude={watch("longitude") ? Number(watch("longitude")) : null}
+            disabled={!canEdit}
+            onChange={(lat, lng) => {
+              setValue("latitude", lat.toFixed(6), { shouldDirty: true });
+              setValue("longitude", lng.toFixed(6), { shouldDirty: true });
+            }}
+          />
+          <p className="mt-1.5 text-xs text-ink-600">
+            Clique no mapa ou arraste o pino pra ajustar. Mapa © OpenStreetMap.
+          </p>
+        </div>
+        <div className="mt-2 grid grid-cols-2 gap-3">
           <input
             disabled={!canEdit}
             placeholder="Latitude"
